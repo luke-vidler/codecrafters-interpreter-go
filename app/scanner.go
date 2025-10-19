@@ -21,6 +21,8 @@ const (
 	STAR        TokenType = "STAR"
 
 	// One or two character tokens
+	BANG        TokenType = "BANG"
+	BANG_EQUAL  TokenType = "BANG_EQUAL"
 	EQUAL       TokenType = "EQUAL"
 	EQUAL_EQUAL TokenType = "EQUAL_EQUAL"
 
@@ -94,6 +96,12 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON, "null")
 	case '*':
 		s.addToken(STAR, "null")
+	case '!':
+		if s.match('=') {
+			s.addToken(BANG_EQUAL, "null")
+		} else {
+			s.addToken(BANG, "null")
+		}
 	case '=':
 		if s.match('=') {
 			s.addToken(EQUAL_EQUAL, "null")
