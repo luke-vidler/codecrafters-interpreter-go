@@ -8,6 +8,8 @@ const (
 	// Single-character tokens
 	LEFT_PAREN  TokenType = "LEFT_PAREN"
 	RIGHT_PAREN TokenType = "RIGHT_PAREN"
+	LEFT_BRACE  TokenType = "LEFT_BRACE"
+	RIGHT_BRACE TokenType = "RIGHT_BRACE"
 
 	// Special token
 	EOF TokenType = "EOF"
@@ -59,6 +61,10 @@ func (s *Scanner) scanToken() {
 		s.addToken(LEFT_PAREN, "null")
 	case ')':
 		s.addToken(RIGHT_PAREN, "null")
+	case '{':
+		s.addToken(LEFT_BRACE, "null")
+	case '}':
+		s.addToken(RIGHT_BRACE, "null")
 	default:
 		// Ignore other characters for now
 	}
