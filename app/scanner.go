@@ -21,10 +21,14 @@ const (
 	STAR        TokenType = "STAR"
 
 	// One or two character tokens
-	BANG        TokenType = "BANG"
-	BANG_EQUAL  TokenType = "BANG_EQUAL"
-	EQUAL       TokenType = "EQUAL"
-	EQUAL_EQUAL TokenType = "EQUAL_EQUAL"
+	BANG          TokenType = "BANG"
+	BANG_EQUAL    TokenType = "BANG_EQUAL"
+	EQUAL         TokenType = "EQUAL"
+	EQUAL_EQUAL   TokenType = "EQUAL_EQUAL"
+	GREATER       TokenType = "GREATER"
+	GREATER_EQUAL TokenType = "GREATER_EQUAL"
+	LESS          TokenType = "LESS"
+	LESS_EQUAL    TokenType = "LESS_EQUAL"
 
 	// Special token
 	EOF TokenType = "EOF"
@@ -107,6 +111,18 @@ func (s *Scanner) scanToken() {
 			s.addToken(EQUAL_EQUAL, "null")
 		} else {
 			s.addToken(EQUAL, "null")
+		}
+	case '<':
+		if s.match('=') {
+			s.addToken(LESS_EQUAL, "null")
+		} else {
+			s.addToken(LESS, "null")
+		}
+	case '>':
+		if s.match('=') {
+			s.addToken(GREATER_EQUAL, "null")
+		} else {
+			s.addToken(GREATER, "null")
 		}
 	case ' ', '\r', '\t':
 		// Ignore whitespace
