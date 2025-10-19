@@ -18,6 +18,7 @@ const (
 	MINUS       TokenType = "MINUS"
 	PLUS        TokenType = "PLUS"
 	SEMICOLON   TokenType = "SEMICOLON"
+	SLASH       TokenType = "SLASH"
 	STAR        TokenType = "STAR"
 
 	// One or two character tokens
@@ -123,6 +124,15 @@ func (s *Scanner) scanToken() {
 			s.addToken(GREATER_EQUAL, "null")
 		} else {
 			s.addToken(GREATER, "null")
+		}
+	case '/':
+		if s.match('/') {
+			// A comment goes until the end of the line
+			for s.peek() != '\n' && !s.isAtEnd() {
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH, "null")
 		}
 	case ' ', '\r', '\t':
 		// Ignore whitespace
