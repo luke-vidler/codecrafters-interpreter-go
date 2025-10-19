@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type TokenType string
 
@@ -28,18 +31,22 @@ type Token struct {
 }
 
 type Scanner struct {
-	source  string
-	tokens  []Token
-	start   int
-	current int
+	source   string
+	tokens   []Token
+	start    int
+	current  int
+	line     int
+	hadError bool
 }
 
 func NewScanner(source string) *Scanner {
 	return &Scanner{
-		source:  source,
-		tokens:  []Token{},
-		start:   0,
-		current: 0,
+		source:   source,
+		tokens:   []Token{},
+		start:    0,
+		current:  0,
+		line:     1,
+		hadError: false,
 	}
 }
 
@@ -83,8 +90,12 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON, "null")
 	case '*':
 		s.addToken(STAR, "null")
+	case ' ', '\r', '\t':
+		// Ignore whitespace
+	case '\n':
+		s.line++
 	default:
-		// Ignore other characters for now
+		s.reportError(fmt.Sprintf("Unexpected character: %c", c))
 	}
 }
 
@@ -109,4 +120,13 @@ func (s *Scanner) isAtEnd() bool {
 
 func (t Token) String() string {
 	return fmt.Sprintf("%s %s %s", t.Type, t.Lexeme, t.Literal)
+}
+
+func (s *Scanner) HasError() bool {
+	return s.hadError
+}
+
+func (s *Scanner) reportError(message string) {
+	fmt.Fprintf(os.Stderr, "[line %d] Error: %s\n", s.line, message)
+	s.hadError = true
 }

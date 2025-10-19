@@ -36,4 +36,8 @@ func main() {
 	for _, token := range tokens {
 		fmt.Println(token)
 	}
+
+	if scanner.HasError() {
+		os.Exit(65)
+	}
 }
