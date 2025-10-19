@@ -10,6 +10,12 @@ const (
 	RIGHT_PAREN TokenType = "RIGHT_PAREN"
 	LEFT_BRACE  TokenType = "LEFT_BRACE"
 	RIGHT_BRACE TokenType = "RIGHT_BRACE"
+	COMMA       TokenType = "COMMA"
+	DOT         TokenType = "DOT"
+	MINUS       TokenType = "MINUS"
+	PLUS        TokenType = "PLUS"
+	SEMICOLON   TokenType = "SEMICOLON"
+	STAR        TokenType = "STAR"
 
 	// Special token
 	EOF TokenType = "EOF"
@@ -65,6 +71,18 @@ func (s *Scanner) scanToken() {
 		s.addToken(LEFT_BRACE, "null")
 	case '}':
 		s.addToken(RIGHT_BRACE, "null")
+	case ',':
+		s.addToken(COMMA, "null")
+	case '.':
+		s.addToken(DOT, "null")
+	case '-':
+		s.addToken(MINUS, "null")
+	case '+':
+		s.addToken(PLUS, "null")
+	case ';':
+		s.addToken(SEMICOLON, "null")
+	case '*':
+		s.addToken(STAR, "null")
 	default:
 		// Ignore other characters for now
 	}
