@@ -20,6 +20,10 @@ const (
 	SEMICOLON   TokenType = "SEMICOLON"
 	STAR        TokenType = "STAR"
 
+	// One or two character tokens
+	EQUAL       TokenType = "EQUAL"
+	EQUAL_EQUAL TokenType = "EQUAL_EQUAL"
+
 	// Special token
 	EOF TokenType = "EOF"
 )
@@ -90,6 +94,12 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON, "null")
 	case '*':
 		s.addToken(STAR, "null")
+	case '=':
+		if s.match('=') {
+			s.addToken(EQUAL_EQUAL, "null")
+		} else {
+			s.addToken(EQUAL, "null")
+		}
 	case ' ', '\r', '\t':
 		// Ignore whitespace
 	case '\n':
@@ -116,6 +126,24 @@ func (s *Scanner) addToken(tokenType TokenType, literal string) {
 
 func (s *Scanner) isAtEnd() bool {
 	return s.current >= len(s.source)
+}
+
+func (s *Scanner) peek() byte {
+	if s.isAtEnd() {
+		return 0
+	}
+	return s.source[s.current]
+}
+
+func (s *Scanner) match(expected byte) bool {
+	if s.isAtEnd() {
+		return false
+	}
+	if s.source[s.current] != expected {
+		return false
+	}
+	s.current++
+	return true
 }
 
 func (t Token) String() string {
