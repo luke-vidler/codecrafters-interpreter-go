@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type TokenType string
@@ -223,9 +224,7 @@ func (s *Scanner) scanNumber() {
 	}
 
 	// Look for a decimal point followed by a digit
-	hasDecimal := false
 	if s.peek() == '.' && s.peekNext() != 0 && s.isDigit(s.peekNext()) {
-		hasDecimal = true
 		// Consume the '.'
 		s.advance()
 
@@ -241,6 +240,11 @@ func (s *Scanner) scanNumber() {
 	// Parse the number and format it
 	value, _ := strconv.ParseFloat(text, 64)
 	literal := strconv.FormatFloat(value, 'f', -1, 64)
+
+	// Ensure at least one decimal place (for integers like 42 -> 42.0)
+	if !strings.Contains(literal, ".") {
+		literal = literal + ".0"
+	}
 
 	s.addToken(NUMBER, literal)
 }
