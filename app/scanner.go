@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type TokenType string
@@ -237,11 +238,9 @@ func (s *Scanner) scanNumber() {
 	// Get the lexeme
 	text := s.source[s.start:s.current]
 
-	// For the literal value, if it's an integer (no decimal), add .0
-	literal := text
-	if !hasDecimal {
-		literal = text + ".0"
-	}
+	// Parse the number and format it
+	value, _ := strconv.ParseFloat(text, 64)
+	literal := strconv.FormatFloat(value, 'f', -1, 64)
 
 	s.addToken(NUMBER, literal)
 }
