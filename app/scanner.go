@@ -34,8 +34,9 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 
 	// Literals
-	STRING TokenType = "STRING"
-	NUMBER TokenType = "NUMBER"
+	STRING     TokenType = "STRING"
+	NUMBER     TokenType = "NUMBER"
+	IDENTIFIER TokenType = "IDENTIFIER"
 
 	// Special token
 	EOF TokenType = "EOF"
@@ -149,6 +150,8 @@ func (s *Scanner) scanToken() {
 	default:
 		if s.isDigit(c) {
 			s.scanNumber()
+		} else if s.isAlpha(c) {
+			s.scanIdentifier()
 		} else {
 			s.reportError(fmt.Sprintf("Unexpected character: %c", c))
 		}
@@ -217,6 +220,14 @@ func (s *Scanner) isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
 
+func (s *Scanner) isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
+func (s *Scanner) isAlphaNumeric(c byte) bool {
+	return s.isAlpha(c) || s.isDigit(c)
+}
+
 func (s *Scanner) scanNumber() {
 	// Consume all digits
 	for s.isDigit(s.peek()) {
@@ -254,6 +265,15 @@ func (s *Scanner) peekNext() byte {
 		return 0
 	}
 	return s.source[s.current+1]
+}
+
+func (s *Scanner) scanIdentifier() {
+	// Consume all alphanumeric characters and underscores
+	for s.isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	s.addToken(IDENTIFIER, "null")
 }
 
 func (t Token) String() string {
