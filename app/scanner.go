@@ -38,6 +38,24 @@ const (
 	NUMBER     TokenType = "NUMBER"
 	IDENTIFIER TokenType = "IDENTIFIER"
 
+	// Keywords
+	AND    TokenType = "AND"
+	CLASS  TokenType = "CLASS"
+	ELSE   TokenType = "ELSE"
+	FALSE  TokenType = "FALSE"
+	FOR    TokenType = "FOR"
+	FUN    TokenType = "FUN"
+	IF     TokenType = "IF"
+	NIL    TokenType = "NIL"
+	OR     TokenType = "OR"
+	PRINT  TokenType = "PRINT"
+	RETURN TokenType = "RETURN"
+	SUPER  TokenType = "SUPER"
+	THIS   TokenType = "THIS"
+	TRUE   TokenType = "TRUE"
+	VAR    TokenType = "VAR"
+	WHILE  TokenType = "WHILE"
+
 	// Special token
 	EOF TokenType = "EOF"
 )
@@ -46,6 +64,25 @@ type Token struct {
 	Type    TokenType
 	Lexeme  string
 	Literal string
+}
+
+var keywords = map[string]TokenType{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"for":    FOR,
+	"fun":    FUN,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE,
 }
 
 type Scanner struct {
@@ -273,7 +310,14 @@ func (s *Scanner) scanIdentifier() {
 		s.advance()
 	}
 
-	s.addToken(IDENTIFIER, "null")
+	// Check if the identifier is a reserved word
+	text := s.source[s.start:s.current]
+	tokenType, isKeyword := keywords[text]
+	if !isKeyword {
+		tokenType = IDENTIFIER
+	}
+
+	s.addToken(tokenType, "null")
 }
 
 func (t Token) String() string {
