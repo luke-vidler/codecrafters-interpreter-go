@@ -31,6 +31,9 @@ const (
 	LESS          TokenType = "LESS"
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 
+	// Literals
+	STRING TokenType = "STRING"
+
 	// Special token
 	EOF TokenType = "EOF"
 )
@@ -134,6 +137,8 @@ func (s *Scanner) scanToken() {
 		} else {
 			s.addToken(SLASH, "null")
 		}
+	case '"':
+		s.scanString()
 	case ' ', '\r', '\t':
 		// Ignore whitespace
 	case '\n':
@@ -178,6 +183,27 @@ func (s *Scanner) match(expected byte) bool {
 	}
 	s.current++
 	return true
+}
+
+func (s *Scanner) scanString() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		s.reportError("Unterminated string.")
+		return
+	}
+
+	// Consume the closing "
+	s.advance()
+
+	// Extract the string value without the surrounding quotes
+	value := s.source[s.start+1 : s.current-1]
+	s.addToken(STRING, value)
 }
 
 func (t Token) String() string {
