@@ -33,6 +33,7 @@ const (
 
 	// Literals
 	STRING TokenType = "STRING"
+	NUMBER TokenType = "NUMBER"
 
 	// Special token
 	EOF TokenType = "EOF"
@@ -144,7 +145,11 @@ func (s *Scanner) scanToken() {
 	case '\n':
 		s.line++
 	default:
-		s.reportError(fmt.Sprintf("Unexpected character: %c", c))
+		if s.isDigit(c) {
+			s.scanNumber()
+		} else {
+			s.reportError(fmt.Sprintf("Unexpected character: %c", c))
+		}
 	}
 }
 
@@ -204,6 +209,48 @@ func (s *Scanner) scanString() {
 	// Extract the string value without the surrounding quotes
 	value := s.source[s.start+1 : s.current-1]
 	s.addToken(STRING, value)
+}
+
+func (s *Scanner) isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func (s *Scanner) scanNumber() {
+	// Consume all digits
+	for s.isDigit(s.peek()) {
+		s.advance()
+	}
+
+	// Look for a decimal point followed by a digit
+	hasDecimal := false
+	if s.peek() == '.' && s.peekNext() != 0 && s.isDigit(s.peekNext()) {
+		hasDecimal = true
+		// Consume the '.'
+		s.advance()
+
+		// Consume fractional part
+		for s.isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+
+	// Get the lexeme
+	text := s.source[s.start:s.current]
+
+	// For the literal value, if it's an integer (no decimal), add .0
+	literal := text
+	if !hasDecimal {
+		literal = text + ".0"
+	}
+
+	s.addToken(NUMBER, literal)
+}
+
+func (s *Scanner) peekNext() byte {
+	if s.current+1 >= len(s.source) {
+		return 0
+	}
+	return s.source[s.current+1]
 }
 
 func (t Token) String() string {
