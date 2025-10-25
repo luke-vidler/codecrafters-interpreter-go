@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Interpreter evaluates expressions
@@ -140,9 +141,9 @@ func (i *Interpreter) isEqual(left, right interface{}) bool {
 	leftNum, leftIsNum := left.(float64)
 	rightNum, rightIsNum := right.(float64)
 
-	// Check if left is a numeric string
+	// Check if left is a numeric string (from NUMBER token, has decimal point)
 	leftIsNumericString := false
-	if leftIsString {
+	if leftIsString && strings.Contains(leftStr, ".") {
 		var err error
 		leftNum, err = strconv.ParseFloat(leftStr, 64)
 		if err == nil {
@@ -151,9 +152,9 @@ func (i *Interpreter) isEqual(left, right interface{}) bool {
 		}
 	}
 
-	// Check if right is a numeric string
+	// Check if right is a numeric string (from NUMBER token, has decimal point)
 	rightIsNumericString := false
-	if rightIsString {
+	if rightIsString && strings.Contains(rightStr, ".") {
 		var err error
 		rightNum, err = strconv.ParseFloat(rightStr, 64)
 		if err == nil {
