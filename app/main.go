@@ -10,13 +10,13 @@ func main() {
 	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
 	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
+		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh <command> <filename>")
 		os.Exit(1)
 	}
 
 	command := os.Args[1]
 
-	if command != "tokenize" {
+	if command != "tokenize" && command != "parse" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -33,11 +33,26 @@ func main() {
 	scanner := NewScanner(string(fileContents))
 	tokens := scanner.ScanTokens()
 
-	for _, token := range tokens {
-		fmt.Println(token)
-	}
+	if command == "tokenize" {
+		for _, token := range tokens {
+			fmt.Println(token)
+		}
 
-	if scanner.HasError() {
-		os.Exit(65)
+		if scanner.HasError() {
+			os.Exit(65)
+		}
+	} else if command == "parse" {
+		if scanner.HasError() {
+			os.Exit(65)
+		}
+
+		parser := NewParser(tokens)
+		expr := parser.Parse()
+
+		if expr != nil {
+			printer := NewAstPrinter()
+			output := printer.Print(expr)
+			fmt.Println(output)
+		}
 	}
 }
