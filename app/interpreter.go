@@ -92,6 +92,26 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum / rightNum
+	case GREATER:
+		// Greater than
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum > rightNum
+	case GREATER_EQUAL:
+		// Greater than or equal
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum >= rightNum
+	case LESS:
+		// Less than
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum < rightNum
+	case LESS_EQUAL:
+		// Less than or equal
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum <= rightNum
 	}
 
 	// Unreachable
