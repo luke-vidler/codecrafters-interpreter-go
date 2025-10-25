@@ -63,32 +63,34 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 	switch expr.Operator.Type {
 	case PLUS:
 		// Addition or string concatenation
-		// Check if both operands are strings (not number strings)
+		leftIsNum := i.isNumber(left)
+		rightIsNum := i.isNumber(right)
+
+		// Both are numbers - numeric addition
+		if leftIsNum && rightIsNum {
+			leftNum := i.toNumber(left)
+			rightNum := i.toNumber(right)
+			return leftNum + rightNum
+		}
+
+		// Check if both are non-numeric strings
 		leftStr, leftIsString := left.(string)
 		rightStr, rightIsString := right.(string)
 
-		if leftIsString && rightIsString {
-			// Check if they are numeric strings (from scanner)
-			_, leftErr := strconv.ParseFloat(leftStr, 64)
-			_, rightErr := strconv.ParseFloat(rightStr, 64)
-
-			// If both can be parsed as numbers, treat as numeric addition
-			if leftErr == nil && rightErr == nil {
-				leftNum := i.toNumber(left)
-				rightNum := i.toNumber(right)
-				return leftNum + rightNum
-			}
-
-			// Otherwise, it's string concatenation
+		// Both are strings and neither is a number - string concatenation
+		if leftIsString && rightIsString && !leftIsNum && !rightIsNum {
 			return leftStr + rightStr
 		}
 
-		// Numeric addition (for float64 values or mixed types)
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum + rightNum
+		// If we get here, operands are not compatible (mixed types)
+		i.runtimeError(expr.Operator, "Operands must be two numbers or two strings.")
+		return nil
 	case MINUS:
-		// Subtraction
+		// Subtraction - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum - rightNum
