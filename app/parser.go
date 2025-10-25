@@ -23,7 +23,7 @@ func (p *Parser) expression() Expr {
 	return p.primary()
 }
 
-// primary parses primary expressions (literals)
+// primary parses primary expressions (literals and grouping)
 func (p *Parser) primary() Expr {
 	// Handle TRUE
 	if p.match(TRUE) {
@@ -49,6 +49,14 @@ func (p *Parser) primary() Expr {
 	// Handle STRING
 	if p.match(STRING) {
 		return &Literal{Value: p.previous().Literal}
+	}
+
+	// Handle LEFT_PAREN - grouping expression
+	if p.match(LEFT_PAREN) {
+		expr := p.expression()
+		// Consume the closing RIGHT_PAREN
+		p.match(RIGHT_PAREN)
+		return &Grouping{Expression: expr}
 	}
 
 	// If we get here, we couldn't parse anything

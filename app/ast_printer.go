@@ -29,3 +29,9 @@ func (p *AstPrinter) VisitLiteralExpr(expr *Literal) interface{} {
 	// For other values, use default formatting
 	return fmt.Sprintf("%v", expr.Value)
 }
+
+// VisitGroupingExpr formats a grouping expression
+func (p *AstPrinter) VisitGroupingExpr(expr *Grouping) interface{} {
+	innerExpr := expr.Expression.Accept(p).(string)
+	return fmt.Sprintf("(group %s)", innerExpr)
+}

@@ -8,6 +8,7 @@ type Expr interface {
 // ExprVisitor is the visitor interface for expressions
 type ExprVisitor interface {
 	VisitLiteralExpr(expr *Literal) interface{}
+	VisitGroupingExpr(expr *Grouping) interface{}
 }
 
 // Literal represents a literal value expression
@@ -17,4 +18,13 @@ type Literal struct {
 
 func (l *Literal) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitLiteralExpr(l)
+}
+
+// Grouping represents a parenthesized expression
+type Grouping struct {
+	Expression Expr
+}
+
+func (g *Grouping) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitGroupingExpr(g)
 }
