@@ -29,8 +29,19 @@ func (i *Interpreter) VisitGroupingExpr(expr *Grouping) interface{} {
 
 // VisitUnaryExpr evaluates a unary expression
 func (i *Interpreter) VisitUnaryExpr(expr *Unary) interface{} {
-	// For now, just return nil as placeholder
-	// We'll implement this in later stages
+	right := i.Evaluate(expr.Right)
+
+	switch expr.Operator.Type {
+	case MINUS:
+		// Negation: convert to number and negate
+		num := i.toNumber(right)
+		return -num
+	case BANG:
+		// Logical not: invert truthiness
+		return !i.isTruthy(right)
+	}
+
+	// Unreachable
 	return nil
 }
 
@@ -39,6 +50,36 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 	// For now, just return nil as placeholder
 	// We'll implement this in later stages
 	return nil
+}
+
+// isTruthy determines the truthiness of a value
+// false and nil are falsy, everything else is truthy
+func (i *Interpreter) isTruthy(value interface{}) bool {
+	if value == nil {
+		return false
+	}
+	if b, ok := value.(bool); ok {
+		return b
+	}
+	return true
+}
+
+// toNumber converts a value to a float64
+func (i *Interpreter) toNumber(value interface{}) float64 {
+	// If it's already a float64, return it
+	if num, ok := value.(float64); ok {
+		return num
+	}
+
+	// If it's a string (from scanner), parse it
+	if str, ok := value.(string); ok {
+		if num, err := strconv.ParseFloat(str, 64); err == nil {
+			return num
+		}
+	}
+
+	// Default to 0 if can't convert
+	return 0
 }
 
 // Stringify converts a value to its string representation for output
