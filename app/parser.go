@@ -20,7 +20,21 @@ func (p *Parser) Parse() Expr {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
-	return p.term()
+	return p.comparison()
+}
+
+// comparison parses comparison expressions (>, <, >=, <=)
+func (p *Parser) comparison() Expr {
+	expr := p.term()
+
+	// Left-associative: keep consuming comparison operators
+	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
+		operator := p.previous()
+		right := p.term()
+		expr = &Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr
 }
 
 // term parses addition and subtraction expressions (+, -)
