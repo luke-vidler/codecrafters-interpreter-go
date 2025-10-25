@@ -20,7 +20,21 @@ func (p *Parser) Parse() Expr {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
-	return p.comparison()
+	return p.equality()
+}
+
+// equality parses equality expressions (==, !=)
+func (p *Parser) equality() Expr {
+	expr := p.comparison()
+
+	// Left-associative: keep consuming equality operators
+	for p.match(EQUAL_EQUAL, BANG_EQUAL) {
+		operator := p.previous()
+		right := p.comparison()
+		expr = &Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr
 }
 
 // comparison parses comparison expressions (>, <, >=, <=)
