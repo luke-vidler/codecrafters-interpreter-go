@@ -10,6 +10,7 @@ type ExprVisitor interface {
 	VisitLiteralExpr(expr *Literal) interface{}
 	VisitGroupingExpr(expr *Grouping) interface{}
 	VisitUnaryExpr(expr *Unary) interface{}
+	VisitBinaryExpr(expr *Binary) interface{}
 }
 
 // Literal represents a literal value expression
@@ -38,4 +39,15 @@ type Unary struct {
 
 func (u *Unary) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitUnaryExpr(u)
+}
+
+// Binary represents a binary operator expression
+type Binary struct {
+	Left     Expr
+	Operator Token
+	Right    Expr
+}
+
+func (b *Binary) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitBinaryExpr(b)
 }

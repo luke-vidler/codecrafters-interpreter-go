@@ -20,7 +20,21 @@ func (p *Parser) Parse() Expr {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
-	return p.unary()
+	return p.factor()
+}
+
+// factor parses multiplication and division expressions (*, /)
+func (p *Parser) factor() Expr {
+	expr := p.unary()
+
+	// Left-associative: keep consuming * and / operators
+	for p.match(STAR, SLASH) {
+		operator := p.previous()
+		right := p.unary()
+		expr = &Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr
 }
 
 // unary parses unary expressions (!, -)

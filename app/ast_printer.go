@@ -41,3 +41,10 @@ func (p *AstPrinter) VisitUnaryExpr(expr *Unary) interface{} {
 	rightExpr := expr.Right.Accept(p).(string)
 	return fmt.Sprintf("(%s %s)", expr.Operator.Lexeme, rightExpr)
 }
+
+// VisitBinaryExpr formats a binary expression
+func (p *AstPrinter) VisitBinaryExpr(expr *Binary) interface{} {
+	leftExpr := expr.Left.Accept(p).(string)
+	rightExpr := expr.Right.Accept(p).(string)
+	return fmt.Sprintf("(%s %s %s)", expr.Operator.Lexeme, leftExpr, rightExpr)
+}
