@@ -52,7 +52,28 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 
 	switch expr.Operator.Type {
 	case PLUS:
-		// Addition
+		// Addition or string concatenation
+		// Check if both operands are strings (not number strings)
+		leftStr, leftIsString := left.(string)
+		rightStr, rightIsString := right.(string)
+
+		if leftIsString && rightIsString {
+			// Check if they are numeric strings (from scanner)
+			_, leftErr := strconv.ParseFloat(leftStr, 64)
+			_, rightErr := strconv.ParseFloat(rightStr, 64)
+
+			// If both can be parsed as numbers, treat as numeric addition
+			if leftErr == nil && rightErr == nil {
+				leftNum := i.toNumber(left)
+				rightNum := i.toNumber(right)
+				return leftNum + rightNum
+			}
+
+			// Otherwise, it's string concatenation
+			return leftStr + rightStr
+		}
+
+		// Numeric addition (for float64 values or mixed types)
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum + rightNum
