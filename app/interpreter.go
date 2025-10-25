@@ -47,8 +47,23 @@ func (i *Interpreter) VisitUnaryExpr(expr *Unary) interface{} {
 
 // VisitBinaryExpr evaluates a binary expression
 func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
-	// For now, just return nil as placeholder
-	// We'll implement this in later stages
+	left := i.Evaluate(expr.Left)
+	right := i.Evaluate(expr.Right)
+
+	switch expr.Operator.Type {
+	case STAR:
+		// Multiplication
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum * rightNum
+	case SLASH:
+		// Division
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum / rightNum
+	}
+
+	// Unreachable
 	return nil
 }
 
