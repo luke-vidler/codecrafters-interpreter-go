@@ -112,10 +112,75 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum <= rightNum
+	case EQUAL_EQUAL:
+		// Equality
+		return i.isEqual(left, right)
+	case BANG_EQUAL:
+		// Inequality
+		return !i.isEqual(left, right)
 	}
 
 	// Unreachable
 	return nil
+}
+
+// isEqual checks if two values are equal
+func (i *Interpreter) isEqual(left, right interface{}) bool {
+	// Handle nil cases
+	if left == nil && right == nil {
+		return true
+	}
+	if left == nil || right == nil {
+		return false
+	}
+
+	// Try to determine if values are numbers (either string or float64)
+	leftStr, leftIsString := left.(string)
+	rightStr, rightIsString := right.(string)
+	leftNum, leftIsNum := left.(float64)
+	rightNum, rightIsNum := right.(float64)
+
+	// Check if left is a numeric string
+	leftIsNumericString := false
+	if leftIsString {
+		var err error
+		leftNum, err = strconv.ParseFloat(leftStr, 64)
+		if err == nil {
+			leftIsNumericString = true
+			leftIsNum = true
+		}
+	}
+
+	// Check if right is a numeric string
+	rightIsNumericString := false
+	if rightIsString {
+		var err error
+		rightNum, err = strconv.ParseFloat(rightStr, 64)
+		if err == nil {
+			rightIsNumericString = true
+			rightIsNum = true
+		}
+	}
+
+	// If both are numbers (either float64 or numeric strings), compare as numbers
+	if leftIsNum && rightIsNum {
+		return leftNum == rightNum
+	}
+
+	// If both are non-numeric strings, compare as strings
+	if leftIsString && rightIsString && !leftIsNumericString && !rightIsNumericString {
+		return leftStr == rightStr
+	}
+
+	// Check if both are booleans
+	leftBool, leftIsBool := left.(bool)
+	rightBool, rightIsBool := right.(bool)
+	if leftIsBool && rightIsBool {
+		return leftBool == rightBool
+	}
+
+	// Different types are not equal
+	return false
 }
 
 // isTruthy determines the truthiness of a value
