@@ -93,12 +93,20 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 		rightNum := i.toNumber(right)
 		return leftNum - rightNum
 	case STAR:
-		// Multiplication
+		// Multiplication - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum * rightNum
 	case SLASH:
-		// Division
+		// Division - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum / rightNum
