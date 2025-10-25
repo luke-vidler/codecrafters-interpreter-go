@@ -2,15 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
 
 // Interpreter evaluates expressions
-type Interpreter struct{}
+type Interpreter struct {
+	hadRuntimeError bool
+}
 
 func NewInterpreter() *Interpreter {
-	return &Interpreter{}
+	return &Interpreter{
+		hadRuntimeError: false,
+	}
 }
 
 // Evaluate evaluates an expression and returns its value
@@ -34,7 +39,11 @@ func (i *Interpreter) VisitUnaryExpr(expr *Unary) interface{} {
 
 	switch expr.Operator.Type {
 	case MINUS:
-		// Negation: convert to number and negate
+		// Negation: check if operand is a number
+		if !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operand must be a number.")
+			return nil
+		}
 		num := i.toNumber(right)
 		return -num
 	case BANG:
@@ -212,6 +221,36 @@ func (i *Interpreter) toNumber(value interface{}) float64 {
 
 	// Default to 0 if can't convert
 	return 0
+}
+
+// isNumber checks if a value is a number (float64 or numeric string)
+func (i *Interpreter) isNumber(value interface{}) bool {
+	// Check if it's a float64
+	if _, ok := value.(float64); ok {
+		return true
+	}
+
+	// Check if it's a numeric string (has decimal point)
+	if str, ok := value.(string); ok {
+		if strings.Contains(str, ".") {
+			if _, err := strconv.ParseFloat(str, 64); err == nil {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// HasRuntimeError returns true if a runtime error occurred
+func (i *Interpreter) HasRuntimeError() bool {
+	return i.hadRuntimeError
+}
+
+// runtimeError reports a runtime error
+func (i *Interpreter) runtimeError(token Token, message string) {
+	i.hadRuntimeError = true
+	fmt.Fprintf(os.Stderr, "%s\n[line 1]\n", message)
 }
 
 // Stringify converts a value to its string representation for output

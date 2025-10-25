@@ -73,6 +73,11 @@ func main() {
 		if expr != nil {
 			interpreter := NewInterpreter()
 			value := interpreter.Evaluate(expr)
+
+			if interpreter.HasRuntimeError() {
+				os.Exit(70)
+			}
+
 			output := interpreter.Stringify(value)
 			fmt.Println(output)
 		}
