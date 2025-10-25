@@ -113,22 +113,38 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 		rightNum := i.toNumber(right)
 		return leftNum / rightNum
 	case GREATER:
-		// Greater than
+		// Greater than - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum > rightNum
 	case GREATER_EQUAL:
-		// Greater than or equal
+		// Greater than or equal - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum >= rightNum
 	case LESS:
-		// Less than
+		// Less than - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum < rightNum
 	case LESS_EQUAL:
-		// Less than or equal
+		// Less than or equal - check if both operands are numbers
+		if !i.isNumber(left) || !i.isNumber(right) {
+			i.runtimeError(expr.Operator, "Operands must be numbers.")
+			return nil
+		}
 		leftNum := i.toNumber(left)
 		rightNum := i.toNumber(right)
 		return leftNum <= rightNum
