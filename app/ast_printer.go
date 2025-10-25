@@ -35,3 +35,9 @@ func (p *AstPrinter) VisitGroupingExpr(expr *Grouping) interface{} {
 	innerExpr := expr.Expression.Accept(p).(string)
 	return fmt.Sprintf("(group %s)", innerExpr)
 }
+
+// VisitUnaryExpr formats a unary expression
+func (p *AstPrinter) VisitUnaryExpr(expr *Unary) interface{} {
+	rightExpr := expr.Right.Accept(p).(string)
+	return fmt.Sprintf("(%s %s)", expr.Operator.Lexeme, rightExpr)
+}

@@ -20,6 +20,19 @@ func (p *Parser) Parse() Expr {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
+	return p.unary()
+}
+
+// unary parses unary expressions (!, -)
+func (p *Parser) unary() Expr {
+	// Check for unary operators
+	if p.match(BANG, MINUS) {
+		operator := p.previous()
+		right := p.unary() // Right-associative, so we call unary() recursively
+		return &Unary{Operator: operator, Right: right}
+	}
+
+	// No unary operator, move to primary
 	return p.primary()
 }
 
