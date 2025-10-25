@@ -49,6 +49,10 @@ func main() {
 		parser := NewParser(tokens)
 		expr := parser.Parse()
 
+		if parser.HasError() {
+			os.Exit(65)
+		}
+
 		if expr != nil {
 			printer := NewAstPrinter()
 			output := printer.Print(expr)

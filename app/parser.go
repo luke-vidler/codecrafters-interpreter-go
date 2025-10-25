@@ -1,15 +1,22 @@
 package main
 
+import (
+	"fmt"
+	"os"
+)
+
 // Parser implements a recursive descent parser
 type Parser struct {
-	tokens  []Token
-	current int
+	tokens   []Token
+	current  int
+	hadError bool
 }
 
 func NewParser(tokens []Token) *Parser {
 	return &Parser{
-		tokens:  tokens,
-		current: 0,
+		tokens:   tokens,
+		current:  0,
+		hadError: false,
 	}
 }
 
@@ -128,7 +135,8 @@ func (p *Parser) primary() Expr {
 		return &Grouping{Expression: expr}
 	}
 
-	// If we get here, we couldn't parse anything
+	// If we get here, we couldn't parse anything - report an error
+	p.error(p.peek(), "Expect expression.")
 	return nil
 }
 
@@ -172,4 +180,27 @@ func (p *Parser) peek() Token {
 // previous returns the most recently consumed token
 func (p *Parser) previous() Token {
 	return p.tokens[p.current-1]
+}
+
+// HasError returns true if the parser encountered any errors
+func (p *Parser) HasError() bool {
+	return p.hadError
+}
+
+// error reports a parsing error at the given token
+func (p *Parser) error(token Token, message string) {
+	p.hadError = true
+	if token.Type == EOF {
+		p.reportError(token, "at end", message)
+	} else {
+		p.reportError(token, "at '"+token.Lexeme+"'", message)
+	}
+}
+
+// reportError prints the error message to stderr
+func (p *Parser) reportError(token Token, where string, message string) {
+	// Note: We need to get the line number from the token
+	// For now, we'll use line 1 as a placeholder since Token doesn't have a line field yet
+	// We'll need to add this field to Token in scanner.go
+	fmt.Fprintf(os.Stderr, "[line 1] Error %s: %s\n", where, message)
 }
