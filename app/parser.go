@@ -20,7 +20,21 @@ func (p *Parser) Parse() Expr {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
-	return p.factor()
+	return p.term()
+}
+
+// term parses addition and subtraction expressions (+, -)
+func (p *Parser) term() Expr {
+	expr := p.factor()
+
+	// Left-associative: keep consuming + and - operators
+	for p.match(PLUS, MINUS) {
+		operator := p.previous()
+		right := p.factor()
+		expr = &Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr
 }
 
 // factor parses multiplication and division expressions (*, /)
