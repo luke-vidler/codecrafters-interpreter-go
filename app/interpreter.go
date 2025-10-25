@@ -51,6 +51,16 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 	right := i.Evaluate(expr.Right)
 
 	switch expr.Operator.Type {
+	case PLUS:
+		// Addition
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum + rightNum
+	case MINUS:
+		// Subtraction
+		leftNum := i.toNumber(left)
+		rightNum := i.toNumber(right)
+		return leftNum - rightNum
 	case STAR:
 		// Multiplication
 		leftNum := i.toNumber(left)
