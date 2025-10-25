@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Interpreter evaluates expressions
 type Interpreter struct{}
@@ -49,14 +52,22 @@ func (i *Interpreter) Stringify(value interface{}) string {
 		return fmt.Sprintf("%t", b)
 	}
 
-	// For numbers, format them properly
-	if num, ok := value.(float64); ok {
-		return fmt.Sprintf("%v", num)
+	// For strings that represent numbers (from scanner), parse and format them
+	if str, ok := value.(string); ok {
+		// Try to parse as float to see if it's a number
+		if num, err := strconv.ParseFloat(str, 64); err == nil {
+			// It's a number - format with minimum decimal places
+			formatted := strconv.FormatFloat(num, 'f', -1, 64)
+			return formatted
+		}
+		// Not a number, return string as-is (for string literals)
+		return str
 	}
 
-	// For strings, return as-is
-	if str, ok := value.(string); ok {
-		return str
+	// For numbers stored as float64, format them properly
+	if num, ok := value.(float64); ok {
+		formatted := strconv.FormatFloat(num, 'f', -1, 64)
+		return formatted
 	}
 
 	// Default formatting
