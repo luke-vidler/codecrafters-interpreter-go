@@ -30,13 +30,35 @@ func (p *Parser) ParseStatements() []Stmt {
 	var statements []Stmt
 
 	for !p.isAtEnd() {
-		stmt := p.statement()
+		stmt := p.declaration()
 		if stmt != nil {
 			statements = append(statements, stmt)
 		}
 	}
 
 	return statements
+}
+
+// declaration parses a declaration (var statement or regular statement)
+func (p *Parser) declaration() Stmt {
+	if p.match(VAR) {
+		return p.varDeclaration()
+	}
+
+	return p.statement()
+}
+
+// varDeclaration parses a variable declaration
+func (p *Parser) varDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "Expect variable name.")
+
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer = p.expression()
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+	return &Var{Name: name, Initializer: initializer}
 }
 
 // statement parses a statement
@@ -172,6 +194,11 @@ func (p *Parser) primary() Expr {
 	// Handle STRING
 	if p.match(STRING) {
 		return &Literal{Value: p.previous().Literal}
+	}
+
+	// Handle IDENTIFIER - variable reference
+	if p.match(IDENTIFIER) {
+		return &Variable{Name: p.previous()}
 	}
 
 	// Handle LEFT_PAREN - grouping expression

@@ -48,3 +48,8 @@ func (p *AstPrinter) VisitBinaryExpr(expr *Binary) interface{} {
 	rightExpr := expr.Right.Accept(p).(string)
 	return fmt.Sprintf("(%s %s %s)", expr.Operator.Lexeme, leftExpr, rightExpr)
 }
+
+// VisitVariableExpr formats a variable expression
+func (p *AstPrinter) VisitVariableExpr(expr *Variable) interface{} {
+	return expr.Name.Lexeme
+}

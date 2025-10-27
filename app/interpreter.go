@@ -10,11 +10,13 @@ import (
 // Interpreter evaluates expressions
 type Interpreter struct {
 	hadRuntimeError bool
+	environment     *Environment
 }
 
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		hadRuntimeError: false,
+		environment:     NewEnvironment(),
 	}
 }
 
@@ -52,6 +54,29 @@ func (i *Interpreter) VisitPrintStmt(stmt *Print) interface{} {
 func (i *Interpreter) VisitExpressionStmt(stmt *Expression) interface{} {
 	i.Evaluate(stmt.Expression)
 	return nil
+}
+
+// VisitVarStmt executes a variable declaration statement
+func (i *Interpreter) VisitVarStmt(stmt *Var) interface{} {
+	var value interface{}
+	if stmt.Initializer != nil {
+		value = i.Evaluate(stmt.Initializer)
+	}
+
+	if !i.hadRuntimeError {
+		i.environment.Define(stmt.Name.Lexeme, value)
+	}
+	return nil
+}
+
+// VisitVariableExpr evaluates a variable expression
+func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
+	value, err := i.environment.Get(expr.Name)
+	if err != nil {
+		i.runtimeError(expr.Name, err.Error())
+		return nil
+	}
+	return value
 }
 
 // VisitLiteralExpr evaluates a literal expression

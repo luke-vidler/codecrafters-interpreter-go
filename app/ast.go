@@ -11,6 +11,7 @@ type ExprVisitor interface {
 	VisitGroupingExpr(expr *Grouping) interface{}
 	VisitUnaryExpr(expr *Unary) interface{}
 	VisitBinaryExpr(expr *Binary) interface{}
+	VisitVariableExpr(expr *Variable) interface{}
 }
 
 // Literal represents a literal value expression
@@ -50,4 +51,13 @@ type Binary struct {
 
 func (b *Binary) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitBinaryExpr(b)
+}
+
+// Variable represents a variable reference expression
+type Variable struct {
+	Name Token
+}
+
+func (v *Variable) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitVariableExpr(v)
 }
