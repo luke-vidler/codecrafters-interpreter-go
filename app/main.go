@@ -16,7 +16,7 @@ func main() {
 
 	command := os.Args[1]
 
-	if command != "tokenize" && command != "parse" && command != "evaluate" {
+	if command != "tokenize" && command != "parse" && command != "evaluate" && command != "run" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -80,6 +80,24 @@ func main() {
 
 			output := interpreter.Stringify(value)
 			fmt.Println(output)
+		}
+	} else if command == "run" {
+		if scanner.HasError() {
+			os.Exit(65)
+		}
+
+		parser := NewParser(tokens)
+		statements := parser.ParseStatements()
+
+		if parser.HasError() {
+			os.Exit(65)
+		}
+
+		interpreter := NewInterpreter()
+		interpreter.InterpretStatements(statements)
+
+		if interpreter.HasRuntimeError() {
+			os.Exit(70)
 		}
 	}
 }

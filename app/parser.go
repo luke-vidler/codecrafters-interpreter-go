@@ -25,6 +25,53 @@ func (p *Parser) Parse() Expr {
 	return p.expression()
 }
 
+// ParseStatements parses a list of statements
+func (p *Parser) ParseStatements() []Stmt {
+	var statements []Stmt
+
+	for !p.isAtEnd() {
+		stmt := p.statement()
+		if stmt != nil {
+			statements = append(statements, stmt)
+		}
+	}
+
+	return statements
+}
+
+// statement parses a statement
+func (p *Parser) statement() Stmt {
+	if p.match(PRINT) {
+		return p.printStatement()
+	}
+
+	return p.expressionStatement()
+}
+
+// printStatement parses a print statement
+func (p *Parser) printStatement() Stmt {
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expect ';' after value.")
+	return &Print{Expression: expr}
+}
+
+// expressionStatement parses an expression statement
+func (p *Parser) expressionStatement() Stmt {
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expect ';' after expression.")
+	return &Expression{Expression: expr}
+}
+
+// consume checks if the current token is of the expected type and advances
+func (p *Parser) consume(tokenType TokenType, message string) Token {
+	if p.check(tokenType) {
+		return p.advance()
+	}
+
+	p.error(p.peek(), message)
+	return p.peek()
+}
+
 // expression parses an expression
 func (p *Parser) expression() Expr {
 	return p.equality()

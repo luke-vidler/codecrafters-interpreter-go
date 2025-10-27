@@ -23,6 +23,37 @@ func (i *Interpreter) Evaluate(expr Expr) interface{} {
 	return expr.Accept(i)
 }
 
+// Execute executes a statement
+func (i *Interpreter) Execute(stmt Stmt) {
+	stmt.Accept(i)
+}
+
+// InterpretStatements interprets a list of statements
+func (i *Interpreter) InterpretStatements(statements []Stmt) {
+	for _, stmt := range statements {
+		i.Execute(stmt)
+		if i.hadRuntimeError {
+			break
+		}
+	}
+}
+
+// VisitPrintStmt executes a print statement
+func (i *Interpreter) VisitPrintStmt(stmt *Print) interface{} {
+	value := i.Evaluate(stmt.Expression)
+	if !i.hadRuntimeError {
+		output := i.Stringify(value)
+		fmt.Println(output)
+	}
+	return nil
+}
+
+// VisitExpressionStmt executes an expression statement
+func (i *Interpreter) VisitExpressionStmt(stmt *Expression) interface{} {
+	i.Evaluate(stmt.Expression)
+	return nil
+}
+
 // VisitLiteralExpr evaluates a literal expression
 func (i *Interpreter) VisitLiteralExpr(expr *Literal) interface{} {
 	return expr.Value
@@ -86,68 +117,47 @@ func (i *Interpreter) VisitBinaryExpr(expr *Binary) interface{} {
 		i.runtimeError(expr.Operator, "Operands must be two numbers or two strings.")
 		return nil
 	case MINUS:
-		// Subtraction - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Subtraction
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum - rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum - rightNum
+		return nil
 	case STAR:
-		// Multiplication - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Multiplication
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum * rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum * rightNum
+		return nil
 	case SLASH:
-		// Division - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Division
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum / rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum / rightNum
+		return nil
 	case GREATER:
-		// Greater than - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Greater than
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum > rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum > rightNum
+		return nil
 	case GREATER_EQUAL:
-		// Greater than or equal - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Greater than or equal
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum >= rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum >= rightNum
+		return nil
 	case LESS:
-		// Less than - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Less than
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum < rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum < rightNum
+		return nil
 	case LESS_EQUAL:
-		// Less than or equal - check if both operands are numbers
-		if !i.isNumber(left) || !i.isNumber(right) {
-			i.runtimeError(expr.Operator, "Operands must be numbers.")
-			return nil
+		// Less than or equal
+		if leftNum, rightNum, ok := i.checkNumberOperands(expr.Operator, left, right); ok {
+			return leftNum <= rightNum
 		}
-		leftNum := i.toNumber(left)
-		rightNum := i.toNumber(right)
-		return leftNum <= rightNum
+		return nil
 	case EQUAL_EQUAL:
 		// Equality
 		return i.isEqual(left, right)
@@ -266,6 +276,16 @@ func (i *Interpreter) isNumber(value interface{}) bool {
 	}
 
 	return false
+}
+
+// checkNumberOperands validates that both operands are numbers and returns them
+// Returns (leftNum, rightNum, ok) where ok is false if validation failed
+func (i *Interpreter) checkNumberOperands(operator Token, left, right interface{}) (float64, float64, bool) {
+	if !i.isNumber(left) || !i.isNumber(right) {
+		i.runtimeError(operator, "Operands must be numbers.")
+		return 0, 0, false
+	}
+	return i.toNumber(left), i.toNumber(right), true
 }
 
 // HasRuntimeError returns true if a runtime error occurred
