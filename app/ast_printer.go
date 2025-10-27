@@ -53,3 +53,9 @@ func (p *AstPrinter) VisitBinaryExpr(expr *Binary) interface{} {
 func (p *AstPrinter) VisitVariableExpr(expr *Variable) interface{} {
 	return expr.Name.Lexeme
 }
+
+// VisitAssignmentExpr formats an assignment expression
+func (p *AstPrinter) VisitAssignmentExpr(expr *Assignment) interface{} {
+	valueExpr := expr.Value.Accept(p).(string)
+	return fmt.Sprintf("(= %s %s)", expr.Name.Lexeme, valueExpr)
+}

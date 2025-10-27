@@ -96,7 +96,27 @@ func (p *Parser) consume(tokenType TokenType, message string) Token {
 
 // expression parses an expression
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.assignment()
+}
+
+// assignment parses assignment expressions (=)
+func (p *Parser) assignment() Expr {
+	expr := p.equality()
+
+	if p.match(EQUAL) {
+		equals := p.previous()
+		value := p.assignment() // Right-associative, so we recursively call assignment()
+
+		// Check if the left side is a variable
+		if variable, ok := expr.(*Variable); ok {
+			return &Assignment{Name: variable.Name, Value: value}
+		}
+
+		// If it's not a variable, report an error
+		p.error(equals, "Invalid assignment target.")
+	}
+
+	return expr
 }
 
 // equality parses equality expressions (==, !=)

@@ -79,6 +79,21 @@ func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
 	return value
 }
 
+// VisitAssignmentExpr evaluates an assignment expression
+func (i *Interpreter) VisitAssignmentExpr(expr *Assignment) interface{} {
+	value := i.Evaluate(expr.Value)
+
+	if !i.hadRuntimeError {
+		err := i.environment.Assign(expr.Name, value)
+		if err != nil {
+			i.runtimeError(expr.Name, err.Error())
+			return nil
+		}
+	}
+
+	return value
+}
+
 // VisitLiteralExpr evaluates a literal expression
 func (i *Interpreter) VisitLiteralExpr(expr *Literal) interface{} {
 	return expr.Value
