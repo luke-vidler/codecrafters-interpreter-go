@@ -81,6 +81,10 @@ func (p *Parser) statement() Stmt {
 		return p.printStatement()
 	}
 
+	if p.match(FOR) {
+		return p.forStatement()
+	}
+
 	if p.match(IF) {
 		return p.ifStatement()
 	}
@@ -135,6 +139,70 @@ func (p *Parser) whileStatement() Stmt {
 	body := p.statement()
 
 	return &While{Condition: condition, Body: body}
+}
+
+// forStatement parses a for statement and desugars it into a while loop
+func (p *Parser) forStatement() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+	// Parse initializer (can be var declaration, expression, or omitted with ;)
+	var initializer Stmt
+	if p.match(SEMICOLON) {
+		// No initializer
+		initializer = nil
+	} else if p.match(VAR) {
+		initializer = p.varDeclaration()
+	} else {
+		initializer = p.expressionStatement()
+	}
+
+	// Parse condition (can be omitted)
+	var condition Expr
+	if !p.check(SEMICOLON) {
+		condition = p.expression()
+	}
+	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+
+	// Parse increment (can be omitted)
+	var increment Expr
+	if !p.check(RIGHT_PAREN) {
+		increment = p.expression()
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+	// Parse body
+	body := p.statement()
+
+	// Desugar the for loop into a while loop
+	// If there's an increment, wrap the body with it
+	if increment != nil {
+		body = &Block{
+			Statements: []Stmt{
+				body,
+				&Expression{Expression: increment},
+			},
+		}
+	}
+
+	// If there's no condition, use true
+	if condition == nil {
+		condition = &Literal{Value: true}
+	}
+
+	// Create the while loop
+	body = &While{Condition: condition, Body: body}
+
+	// If there's an initializer, wrap everything in a block
+	if initializer != nil {
+		body = &Block{
+			Statements: []Stmt{
+				initializer,
+				body,
+			},
+		}
+	}
+
+	return body
 }
 
 // printStatement parses a print statement
