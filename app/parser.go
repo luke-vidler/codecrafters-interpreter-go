@@ -153,7 +153,7 @@ func (p *Parser) expression() Expr {
 
 // assignment parses assignment expressions (=)
 func (p *Parser) assignment() Expr {
-	expr := p.equality()
+	expr := p.or()
 
 	if p.match(EQUAL) {
 		equals := p.previous()
@@ -166,6 +166,19 @@ func (p *Parser) assignment() Expr {
 
 		// If it's not a variable, report an error
 		p.error(equals, "Invalid assignment target.")
+	}
+
+	return expr
+}
+
+// or parses logical OR expressions (or)
+func (p *Parser) or() Expr {
+	expr := p.equality()
+
+	for p.match(OR) {
+		operator := p.previous()
+		right := p.equality()
+		expr = &Logical{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr

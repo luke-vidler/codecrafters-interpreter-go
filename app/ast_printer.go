@@ -59,3 +59,10 @@ func (p *AstPrinter) VisitAssignmentExpr(expr *Assignment) interface{} {
 	valueExpr := expr.Value.Accept(p).(string)
 	return fmt.Sprintf("(= %s %s)", expr.Name.Lexeme, valueExpr)
 }
+
+// VisitLogicalExpr formats a logical expression
+func (p *AstPrinter) VisitLogicalExpr(expr *Logical) interface{} {
+	leftExpr := expr.Left.Accept(p).(string)
+	rightExpr := expr.Right.Accept(p).(string)
+	return fmt.Sprintf("(%s %s %s)", expr.Operator.Lexeme, leftExpr, rightExpr)
+}

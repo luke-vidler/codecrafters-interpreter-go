@@ -133,6 +133,25 @@ func (i *Interpreter) VisitAssignmentExpr(expr *Assignment) interface{} {
 	return value
 }
 
+// VisitLogicalExpr evaluates a logical expression with short-circuit evaluation
+func (i *Interpreter) VisitLogicalExpr(expr *Logical) interface{} {
+	left := i.Evaluate(expr.Left)
+
+	if i.hadRuntimeError {
+		return nil
+	}
+
+	// For OR: if left is truthy, return it without evaluating right
+	if expr.Operator.Type == OR {
+		if i.isTruthy(left) {
+			return left
+		}
+	}
+
+	// For OR with falsy left, or for AND (future implementation)
+	return i.Evaluate(expr.Right)
+}
+
 // VisitLiteralExpr evaluates a literal expression
 func (i *Interpreter) VisitLiteralExpr(expr *Literal) interface{} {
 	return expr.Value

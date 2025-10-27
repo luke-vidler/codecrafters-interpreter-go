@@ -13,6 +13,7 @@ type ExprVisitor interface {
 	VisitBinaryExpr(expr *Binary) interface{}
 	VisitVariableExpr(expr *Variable) interface{}
 	VisitAssignmentExpr(expr *Assignment) interface{}
+	VisitLogicalExpr(expr *Logical) interface{}
 }
 
 // Literal represents a literal value expression
@@ -71,4 +72,15 @@ type Assignment struct {
 
 func (a *Assignment) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitAssignmentExpr(a)
+}
+
+// Logical represents a logical operator expression (and, or)
+type Logical struct {
+	Left     Expr
+	Operator Token
+	Right    Expr
+}
+
+func (l *Logical) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitLogicalExpr(l)
 }
