@@ -146,9 +146,14 @@ func (i *Interpreter) VisitLogicalExpr(expr *Logical) interface{} {
 		if i.isTruthy(left) {
 			return left
 		}
+	} else if expr.Operator.Type == AND {
+		// For AND: if left is falsy, return it without evaluating right
+		if !i.isTruthy(left) {
+			return left
+		}
 	}
 
-	// For OR with falsy left, or for AND (future implementation)
+	// For OR with falsy left, or AND with truthy left: evaluate and return right
 	return i.Evaluate(expr.Right)
 }
 

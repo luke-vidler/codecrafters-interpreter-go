@@ -173,9 +173,22 @@ func (p *Parser) assignment() Expr {
 
 // or parses logical OR expressions (or)
 func (p *Parser) or() Expr {
-	expr := p.equality()
+	expr := p.and()
 
 	for p.match(OR) {
+		operator := p.previous()
+		right := p.and()
+		expr = &Logical{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr
+}
+
+// and parses logical AND expressions (and)
+func (p *Parser) and() Expr {
+	expr := p.equality()
+
+	for p.match(AND) {
 		operator := p.previous()
 		right := p.equality()
 		expr = &Logical{Left: expr, Operator: operator, Right: right}
