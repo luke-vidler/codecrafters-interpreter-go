@@ -69,6 +69,28 @@ func (i *Interpreter) VisitVarStmt(stmt *Var) interface{} {
 	return nil
 }
 
+// VisitBlockStmt executes a block statement
+func (i *Interpreter) VisitBlockStmt(stmt *Block) interface{} {
+	i.executeBlock(stmt.Statements, NewEnclosedEnvironment(i.environment))
+	return nil
+}
+
+// executeBlock executes a list of statements in a new environment
+func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
+	previous := i.environment
+	defer func() {
+		i.environment = previous
+	}()
+
+	i.environment = environment
+	for _, stmt := range statements {
+		i.Execute(stmt)
+		if i.hadRuntimeError {
+			break
+		}
+	}
+}
+
 // VisitVariableExpr evaluates a variable expression
 func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
 	value, err := i.environment.Get(expr.Name)
