@@ -41,6 +41,13 @@ func (p *Parser) ParseStatements() []Stmt {
 
 // declaration parses a declaration (var statement or regular statement)
 func (p *Parser) declaration() Stmt {
+	defer func() {
+		if r := recover(); r != nil {
+			// Panic mode: synchronize to the next statement
+			p.synchronize()
+		}
+	}()
+
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
@@ -91,7 +98,7 @@ func (p *Parser) consume(tokenType TokenType, message string) Token {
 	}
 
 	p.error(p.peek(), message)
-	return p.peek()
+	panic("parse error")
 }
 
 // expression parses an expression
@@ -231,7 +238,7 @@ func (p *Parser) primary() Expr {
 
 	// If we get here, we couldn't parse anything - report an error
 	p.error(p.peek(), "Expect expression.")
-	return nil
+	panic("parse error")
 }
 
 // match checks if the current token matches any of the given types
@@ -297,4 +304,22 @@ func (p *Parser) reportError(token Token, where string, message string) {
 	// For now, we'll use line 1 as a placeholder since Token doesn't have a line field yet
 	// We'll need to add this field to Token in scanner.go
 	fmt.Fprintf(os.Stderr, "[line 1] Error %s: %s\n", where, message)
+}
+
+// synchronize advances the parser to the next statement boundary
+func (p *Parser) synchronize() {
+	p.advance()
+
+	for !p.isAtEnd() {
+		if p.previous().Type == SEMICOLON {
+			return
+		}
+
+		switch p.peek().Type {
+		case CLASS, FUN, VAR, FOR, IF, WHILE, PRINT, RETURN:
+			return
+		}
+
+		p.advance()
+	}
 }
