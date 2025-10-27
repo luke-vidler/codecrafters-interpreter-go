@@ -81,6 +81,10 @@ func (p *Parser) statement() Stmt {
 		return p.printStatement()
 	}
 
+	if p.match(IF) {
+		return p.ifStatement()
+	}
+
 	if p.match(LEFT_BRACE) {
 		return p.blockStatement()
 	}
@@ -101,6 +105,21 @@ func (p *Parser) blockStatement() Stmt {
 
 	p.consume(RIGHT_BRACE, "Expect '}' after block.")
 	return &Block{Statements: statements}
+}
+
+// ifStatement parses an if statement
+func (p *Parser) ifStatement() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+	thenBranch := p.statement()
+	var elseBranch Stmt
+	if p.match(ELSE) {
+		elseBranch = p.statement()
+	}
+
+	return &If{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
 }
 
 // printStatement parses a print statement

@@ -75,6 +75,23 @@ func (i *Interpreter) VisitBlockStmt(stmt *Block) interface{} {
 	return nil
 }
 
+// VisitIfStmt executes an if statement
+func (i *Interpreter) VisitIfStmt(stmt *If) interface{} {
+	condition := i.Evaluate(stmt.Condition)
+
+	if i.hadRuntimeError {
+		return nil
+	}
+
+	if i.isTruthy(condition) {
+		i.Execute(stmt.ThenBranch)
+	} else if stmt.ElseBranch != nil {
+		i.Execute(stmt.ElseBranch)
+	}
+
+	return nil
+}
+
 // executeBlock executes a list of statements in a new environment
 func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
 	previous := i.environment
