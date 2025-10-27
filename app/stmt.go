@@ -12,6 +12,7 @@ type StmtVisitor interface {
 	VisitVarStmt(stmt *Var) interface{}
 	VisitBlockStmt(stmt *Block) interface{}
 	VisitIfStmt(stmt *If) interface{}
+	VisitWhileStmt(stmt *While) interface{}
 }
 
 // Print represents a print statement
@@ -60,4 +61,14 @@ type If struct {
 
 func (i *If) Accept(visitor StmtVisitor) interface{} {
 	return visitor.VisitIfStmt(i)
+}
+
+// While represents a while statement
+type While struct {
+	Condition Expr
+	Body      Stmt
+}
+
+func (w *While) Accept(visitor StmtVisitor) interface{} {
+	return visitor.VisitWhileStmt(w)
 }

@@ -92,6 +92,29 @@ func (i *Interpreter) VisitIfStmt(stmt *If) interface{} {
 	return nil
 }
 
+// VisitWhileStmt executes a while statement
+func (i *Interpreter) VisitWhileStmt(stmt *While) interface{} {
+	for {
+		condition := i.Evaluate(stmt.Condition)
+
+		if i.hadRuntimeError {
+			return nil
+		}
+
+		if !i.isTruthy(condition) {
+			break
+		}
+
+		i.Execute(stmt.Body)
+
+		if i.hadRuntimeError {
+			return nil
+		}
+	}
+
+	return nil
+}
+
 // executeBlock executes a list of statements in a new environment
 func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
 	previous := i.environment
