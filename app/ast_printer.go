@@ -66,3 +66,16 @@ func (p *AstPrinter) VisitLogicalExpr(expr *Logical) interface{} {
 	rightExpr := expr.Right.Accept(p).(string)
 	return fmt.Sprintf("(%s %s %s)", expr.Operator.Lexeme, leftExpr, rightExpr)
 }
+
+// VisitCallExpr formats a call expression
+func (p *AstPrinter) VisitCallExpr(expr *Call) interface{} {
+	calleeExpr := expr.Callee.Accept(p).(string)
+	args := ""
+	for i, arg := range expr.Arguments {
+		if i > 0 {
+			args += " "
+		}
+		args += arg.Accept(p).(string)
+	}
+	return fmt.Sprintf("(call %s %s)", calleeExpr, args)
+}

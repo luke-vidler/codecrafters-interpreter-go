@@ -14,9 +14,14 @@ type Interpreter struct {
 }
 
 func NewInterpreter() *Interpreter {
+	env := NewEnvironment()
+
+	// Define native functions
+	env.Define("clock", &ClockNative{})
+
 	return &Interpreter{
 		hadRuntimeError: false,
-		environment:     NewEnvironment(),
+		environment:     env,
 	}
 }
 
@@ -178,6 +183,40 @@ func (i *Interpreter) VisitLogicalExpr(expr *Logical) interface{} {
 
 	// For OR with falsy left, or AND with truthy left: evaluate and return right
 	return i.Evaluate(expr.Right)
+}
+
+// VisitCallExpr evaluates a function call expression
+func (i *Interpreter) VisitCallExpr(expr *Call) interface{} {
+	callee := i.Evaluate(expr.Callee)
+
+	if i.hadRuntimeError {
+		return nil
+	}
+
+	// Evaluate arguments
+	arguments := []interface{}{}
+	for _, arg := range expr.Arguments {
+		arguments = append(arguments, i.Evaluate(arg))
+		if i.hadRuntimeError {
+			return nil
+		}
+	}
+
+	// Check if callee is actually callable
+	function, ok := callee.(LoxCallable)
+	if !ok {
+		i.runtimeError(expr.Paren, "Can only call functions and classes.")
+		return nil
+	}
+
+	// Check arity
+	if len(arguments) != function.Arity() {
+		i.runtimeError(expr.Paren, fmt.Sprintf("Expected %d arguments but got %d.", function.Arity(), len(arguments)))
+		return nil
+	}
+
+	// Call the function
+	return function.Call(i, arguments)
 }
 
 // VisitLiteralExpr evaluates a literal expression

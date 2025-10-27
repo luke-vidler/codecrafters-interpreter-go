@@ -14,6 +14,7 @@ type ExprVisitor interface {
 	VisitVariableExpr(expr *Variable) interface{}
 	VisitAssignmentExpr(expr *Assignment) interface{}
 	VisitLogicalExpr(expr *Logical) interface{}
+	VisitCallExpr(expr *Call) interface{}
 }
 
 // Literal represents a literal value expression
@@ -83,4 +84,15 @@ type Logical struct {
 
 func (l *Logical) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitLogicalExpr(l)
+}
+
+// Call represents a function call expression
+type Call struct {
+	Callee    Expr
+	Paren     Token
+	Arguments []Expr
+}
+
+func (c *Call) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitCallExpr(c)
 }

@@ -345,8 +345,41 @@ func (p *Parser) unary() Expr {
 		return &Unary{Operator: operator, Right: right}
 	}
 
-	// No unary operator, move to primary
-	return p.primary()
+	// No unary operator, move to call
+	return p.call()
+}
+
+// call parses function call expressions
+func (p *Parser) call() Expr {
+	expr := p.primary()
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+
+	return expr
+}
+
+// finishCall parses the arguments of a function call
+func (p *Parser) finishCall(callee Expr) Expr {
+	arguments := []Expr{}
+
+	if !p.check(RIGHT_PAREN) {
+		for {
+			arguments = append(arguments, p.expression())
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+
+	paren := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+
+	return &Call{Callee: callee, Paren: paren, Arguments: arguments}
 }
 
 // primary parses primary expressions (literals and grouping)
