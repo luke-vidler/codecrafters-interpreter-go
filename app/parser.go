@@ -22,6 +22,13 @@ func NewParser(tokens []Token) *Parser {
 
 // Parse parses the tokens and returns an expression
 func (p *Parser) Parse() Expr {
+	defer func() {
+		if r := recover(); r != nil {
+			// Caught a parse error, just return nil
+			// The error has already been reported
+		}
+	}()
+
 	return p.expression()
 }
 
