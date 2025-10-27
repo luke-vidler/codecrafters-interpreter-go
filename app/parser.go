@@ -205,7 +205,7 @@ func (p *Parser) primary() Expr {
 	if p.match(LEFT_PAREN) {
 		expr := p.expression()
 		// Consume the closing RIGHT_PAREN
-		p.match(RIGHT_PAREN)
+		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
 		return &Grouping{Expression: expr}
 	}
 
