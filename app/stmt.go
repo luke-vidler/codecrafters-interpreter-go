@@ -13,6 +13,7 @@ type StmtVisitor interface {
 	VisitBlockStmt(stmt *Block) interface{}
 	VisitIfStmt(stmt *If) interface{}
 	VisitWhileStmt(stmt *While) interface{}
+	VisitFunctionStmt(stmt *Function) interface{}
 }
 
 // Print represents a print statement
@@ -71,4 +72,15 @@ type While struct {
 
 func (w *While) Accept(visitor StmtVisitor) interface{} {
 	return visitor.VisitWhileStmt(w)
+}
+
+// Function represents a function declaration statement
+type Function struct {
+	Name   Token
+	Params []Token
+	Body   []Stmt
+}
+
+func (f *Function) Accept(visitor StmtVisitor) interface{} {
+	return visitor.VisitFunctionStmt(f)
 }

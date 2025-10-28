@@ -55,6 +55,10 @@ func (p *Parser) declaration() Stmt {
 		}
 	}()
 
+	if p.match(FUN) {
+		return p.function("function")
+	}
+
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
@@ -73,6 +77,28 @@ func (p *Parser) varDeclaration() Stmt {
 
 	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
 	return &Var{Name: name, Initializer: initializer}
+}
+
+// function parses a function declaration
+func (p *Parser) function(kind string) Stmt {
+	name := p.consume(IDENTIFIER, "Expect "+kind+" name.")
+	p.consume(LEFT_PAREN, "Expect '(' after "+kind+" name.")
+
+	parameters := []Token{}
+	if !p.check(RIGHT_PAREN) {
+		for {
+			parameters = append(parameters, p.consume(IDENTIFIER, "Expect parameter name."))
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+
+	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	body := p.blockStatement().(*Block).Statements
+
+	return &Function{Name: name, Params: parameters, Body: body}
 }
 
 // statement parses a statement

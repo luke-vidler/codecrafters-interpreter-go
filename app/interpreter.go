@@ -74,6 +74,13 @@ func (i *Interpreter) VisitVarStmt(stmt *Var) interface{} {
 	return nil
 }
 
+// VisitFunctionStmt executes a function declaration statement
+func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
+	function := NewLoxFunction(stmt)
+	i.environment.Define(stmt.Name.Lexeme, function)
+	return nil
+}
+
 // VisitBlockStmt executes a block statement
 func (i *Interpreter) VisitBlockStmt(stmt *Block) interface{} {
 	i.executeBlock(stmt.Statements, NewEnclosedEnvironment(i.environment))
@@ -473,6 +480,11 @@ func (i *Interpreter) Stringify(value interface{}) string {
 	// For booleans, return "true" or "false"
 	if b, ok := value.(bool); ok {
 		return fmt.Sprintf("%t", b)
+	}
+
+	// For LoxFunction, use its String() method
+	if fn, ok := value.(*LoxFunction); ok {
+		return fn.String()
 	}
 
 	// For strings that represent numbers (from scanner), parse and format them
