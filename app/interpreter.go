@@ -76,7 +76,8 @@ func (i *Interpreter) VisitVarStmt(stmt *Var) interface{} {
 
 // VisitFunctionStmt executes a function declaration statement
 func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
-	function := NewLoxFunction(stmt)
+	// Capture the current environment as the closure
+	function := NewLoxFunction(stmt, i.environment)
 	i.environment.Define(stmt.Name.Lexeme, function)
 	return nil
 }

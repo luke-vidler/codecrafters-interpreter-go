@@ -31,10 +31,14 @@ func (c *ClockNative) Call(interpreter *Interpreter, arguments []interface{}) in
 // LoxFunction represents a user-defined function
 type LoxFunction struct {
 	declaration *Function
+	closure     *Environment
 }
 
-func NewLoxFunction(declaration *Function) *LoxFunction {
-	return &LoxFunction{declaration: declaration}
+func NewLoxFunction(declaration *Function, closure *Environment) *LoxFunction {
+	return &LoxFunction{
+		declaration: declaration,
+		closure:     closure,
+	}
 }
 
 func (f *LoxFunction) Arity() int {
@@ -43,7 +47,8 @@ func (f *LoxFunction) Arity() int {
 
 func (f *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) interface{} {
 	// Create a new environment for the function execution
-	environment := NewEnclosedEnvironment(interpreter.environment)
+	// Use the closure environment as the parent, not the current environment
+	environment := NewEnclosedEnvironment(f.closure)
 
 	// Bind parameters to arguments
 	for i, param := range f.declaration.Params {
