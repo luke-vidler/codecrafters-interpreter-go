@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+// ReturnValue is used to propagate return values up the call stack
+type ReturnValue struct {
+	Value interface{}
+}
+
 // LoxCallable is the interface for all callable objects (functions, native functions, etc.)
 type LoxCallable interface {
 	Arity() int
@@ -45,10 +50,25 @@ func (f *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) in
 		environment.Define(param.Lexeme, arguments[i])
 	}
 
-	// Execute the function body
-	interpreter.executeBlock(f.declaration.Body, environment)
+	// Use defer/recover to catch return values
+	var returnValue interface{}
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				if ret, ok := r.(*ReturnValue); ok {
+					returnValue = ret.Value
+				} else {
+					// Re-panic if it's not a return value
+					panic(r)
+				}
+			}
+		}()
 
-	return nil
+		// Execute the function body
+		interpreter.executeBlock(f.declaration.Body, environment)
+	}()
+
+	return returnValue
 }
 
 func (f *LoxFunction) String() string {

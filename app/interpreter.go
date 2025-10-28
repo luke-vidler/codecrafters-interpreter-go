@@ -81,6 +81,17 @@ func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
 	return nil
 }
 
+// VisitReturnStmt executes a return statement
+func (i *Interpreter) VisitReturnStmt(stmt *Return) interface{} {
+	var value interface{}
+	if stmt.Value != nil {
+		value = i.Evaluate(stmt.Value)
+	}
+
+	// Throw the return value to be caught by the function call
+	panic(&ReturnValue{Value: value})
+}
+
 // VisitBlockStmt executes a block statement
 func (i *Interpreter) VisitBlockStmt(stmt *Block) interface{} {
 	i.executeBlock(stmt.Statements, NewEnclosedEnvironment(i.environment))

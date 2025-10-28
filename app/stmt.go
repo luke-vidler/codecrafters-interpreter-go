@@ -14,6 +14,7 @@ type StmtVisitor interface {
 	VisitIfStmt(stmt *If) interface{}
 	VisitWhileStmt(stmt *While) interface{}
 	VisitFunctionStmt(stmt *Function) interface{}
+	VisitReturnStmt(stmt *Return) interface{}
 }
 
 // Print represents a print statement
@@ -83,4 +84,14 @@ type Function struct {
 
 func (f *Function) Accept(visitor StmtVisitor) interface{} {
 	return visitor.VisitFunctionStmt(f)
+}
+
+// Return represents a return statement
+type Return struct {
+	Keyword Token
+	Value   Expr
+}
+
+func (r *Return) Accept(visitor StmtVisitor) interface{} {
+	return visitor.VisitReturnStmt(r)
 }
