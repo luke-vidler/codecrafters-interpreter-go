@@ -10,19 +10,21 @@ import (
 // Interpreter evaluates expressions
 type Interpreter struct {
 	hadRuntimeError bool
+	globals         *Environment
 	environment     *Environment
 	locals          map[Expr]int
 }
 
 func NewInterpreter() *Interpreter {
-	env := NewEnvironment()
+	globals := NewEnvironment()
 
 	// Define native functions
-	env.Define("clock", &ClockNative{})
+	globals.Define("clock", &ClockNative{})
 
 	return &Interpreter{
 		hadRuntimeError: false,
-		environment:     env,
+		globals:         globals,
+		environment:     globals,
 		locals:          make(map[Expr]int),
 	}
 }
@@ -37,8 +39,8 @@ func (i *Interpreter) lookUpVariable(name Token, expr Expr) interface{} {
 	if distance, ok := i.locals[expr]; ok {
 		return i.environment.GetAt(distance, name.Lexeme)
 	} else {
-		// Global variable
-		value, err := i.environment.Get(name)
+		// Global variable - look up in globals environment
+		value, err := i.globals.Get(name)
 		if err != nil {
 			i.runtimeError(name, err.Error())
 			return nil
@@ -190,8 +192,8 @@ func (i *Interpreter) VisitAssignmentExpr(expr *Assignment) interface{} {
 		if distance, ok := i.locals[expr]; ok {
 			i.environment.AssignAt(distance, expr.Name, value)
 		} else {
-			// Global variable
-			err := i.environment.Assign(expr.Name, value)
+			// Global variable - assign in globals environment
+			err := i.globals.Assign(expr.Name, value)
 			if err != nil {
 				i.runtimeError(expr.Name, err.Error())
 				return nil
