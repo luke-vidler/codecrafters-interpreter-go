@@ -11,6 +11,7 @@ import (
 type Interpreter struct {
 	hadRuntimeError bool
 	environment     *Environment
+	locals          map[Expr]int
 }
 
 func NewInterpreter() *Interpreter {
@@ -22,6 +23,27 @@ func NewInterpreter() *Interpreter {
 	return &Interpreter{
 		hadRuntimeError: false,
 		environment:     env,
+		locals:          make(map[Expr]int),
+	}
+}
+
+// resolve stores the resolved depth for a variable
+func (i *Interpreter) resolve(expr Expr, depth int) {
+	i.locals[expr] = depth
+}
+
+// lookUpVariable looks up a variable using the resolved depth if available
+func (i *Interpreter) lookUpVariable(name Token, expr Expr) interface{} {
+	if distance, ok := i.locals[expr]; ok {
+		return i.environment.GetAt(distance, name.Lexeme)
+	} else {
+		// Global variable
+		value, err := i.environment.Get(name)
+		if err != nil {
+			i.runtimeError(name, err.Error())
+			return nil
+		}
+		return value
 	}
 }
 
@@ -157,12 +179,7 @@ func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) 
 
 // VisitVariableExpr evaluates a variable expression
 func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
-	value, err := i.environment.Get(expr.Name)
-	if err != nil {
-		i.runtimeError(expr.Name, err.Error())
-		return nil
-	}
-	return value
+	return i.lookUpVariable(expr.Name, expr)
 }
 
 // VisitAssignmentExpr evaluates an assignment expression
@@ -170,10 +187,15 @@ func (i *Interpreter) VisitAssignmentExpr(expr *Assignment) interface{} {
 	value := i.Evaluate(expr.Value)
 
 	if !i.hadRuntimeError {
-		err := i.environment.Assign(expr.Name, value)
-		if err != nil {
-			i.runtimeError(expr.Name, err.Error())
-			return nil
+		if distance, ok := i.locals[expr]; ok {
+			i.environment.AssignAt(distance, expr.Name, value)
+		} else {
+			// Global variable
+			err := i.environment.Assign(expr.Name, value)
+			if err != nil {
+				i.runtimeError(expr.Name, err.Error())
+				return nil
+			}
 		}
 	}
 

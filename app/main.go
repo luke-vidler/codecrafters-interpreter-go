@@ -94,6 +94,11 @@ func main() {
 		}
 
 		interpreter := NewInterpreter()
+
+		// Resolve variable bindings
+		resolver := NewResolver(interpreter)
+		resolver.Resolve(statements)
+
 		interpreter.InterpretStatements(statements)
 
 		if interpreter.HasRuntimeError() {
