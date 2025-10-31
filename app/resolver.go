@@ -173,6 +173,12 @@ func (r *Resolver) VisitPrintStmt(stmt *Print) interface{} {
 
 // VisitReturnStmt resolves a return statement
 func (r *Resolver) VisitReturnStmt(stmt *Return) interface{} {
+	if r.currentFunction == NONE_FUNCTION {
+		r.hadError = true
+		fmt.Fprintf(os.Stderr, "[line %d] Error at 'return': Can't return from top-level code.\n",
+			stmt.Keyword.Line)
+	}
+
 	if stmt.Value != nil {
 		r.resolveExpr(stmt.Value)
 	}
