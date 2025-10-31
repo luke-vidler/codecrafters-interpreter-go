@@ -530,6 +530,16 @@ func (i *Interpreter) Stringify(value interface{}) string {
 		return fn.String()
 	}
 
+	// For LoxClass, use its String() method
+	if class, ok := value.(*LoxClass); ok {
+		return class.String()
+	}
+
+	// For LoxInstance, use its String() method
+	if instance, ok := value.(*LoxInstance); ok {
+		return instance.String()
+	}
+
 	// For strings that represent numbers (from scanner), parse and format them
 	if str, ok := value.(string); ok {
 		// Try to parse as float to see if it's a number

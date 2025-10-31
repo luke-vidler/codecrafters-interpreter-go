@@ -94,3 +94,29 @@ func NewLoxClass(name string) *LoxClass {
 func (c *LoxClass) String() string {
 	return c.name
 }
+
+// Arity returns the number of arguments the class constructor takes
+func (c *LoxClass) Arity() int {
+	return 0
+}
+
+// Call creates a new instance of the class
+func (c *LoxClass) Call(interpreter *Interpreter, arguments []interface{}) interface{} {
+	instance := NewLoxInstance(c)
+	return instance
+}
+
+// LoxInstance represents an instance of a class
+type LoxInstance struct {
+	class *LoxClass
+}
+
+func NewLoxInstance(class *LoxClass) *LoxInstance {
+	return &LoxInstance{
+		class: class,
+	}
+}
+
+func (i *LoxInstance) String() string {
+	return fmt.Sprintf("%s instance", i.class.name)
+}
