@@ -69,6 +69,15 @@ func (r *Resolver) declare(name Token) {
 	}
 
 	scope := r.scopes[len(r.scopes)-1]
+
+	// Check if variable already exists in current scope
+	if _, exists := scope[name.Lexeme]; exists {
+		r.hadError = true
+		fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': Already a variable with this name in this scope.\n",
+			name.Line, name.Lexeme)
+		return
+	}
+
 	scope[name.Lexeme] = false
 }
 
