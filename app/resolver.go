@@ -149,6 +149,13 @@ func (r *Resolver) VisitFunctionStmt(stmt *Function) interface{} {
 	return nil
 }
 
+// VisitClassStmt resolves a class declaration
+func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
+	r.declare(stmt.Name)
+	r.define(stmt.Name)
+	return nil
+}
+
 // VisitExpressionStmt resolves an expression statement
 func (r *Resolver) VisitExpressionStmt(stmt *Expression) interface{} {
 	r.resolveExpr(stmt.Expression)

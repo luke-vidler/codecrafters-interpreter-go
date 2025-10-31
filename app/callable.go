@@ -79,3 +79,18 @@ func (f *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) in
 func (f *LoxFunction) String() string {
 	return fmt.Sprintf("<fn %s>", f.declaration.Name.Lexeme)
 }
+
+// LoxClass represents a user-defined class
+type LoxClass struct {
+	name string
+}
+
+func NewLoxClass(name string) *LoxClass {
+	return &LoxClass{
+		name: name,
+	}
+}
+
+func (c *LoxClass) String() string {
+	return c.name
+}

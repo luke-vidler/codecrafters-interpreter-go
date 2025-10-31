@@ -15,6 +15,7 @@ type StmtVisitor interface {
 	VisitWhileStmt(stmt *While) interface{}
 	VisitFunctionStmt(stmt *Function) interface{}
 	VisitReturnStmt(stmt *Return) interface{}
+	VisitClassStmt(stmt *Class) interface{}
 }
 
 // Print represents a print statement
@@ -94,4 +95,14 @@ type Return struct {
 
 func (r *Return) Accept(visitor StmtVisitor) interface{} {
 	return visitor.VisitReturnStmt(r)
+}
+
+// Class represents a class declaration statement
+type Class struct {
+	Name    Token
+	Methods []*Function
+}
+
+func (c *Class) Accept(visitor StmtVisitor) interface{} {
+	return visitor.VisitClassStmt(c)
 }

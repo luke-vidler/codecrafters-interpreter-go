@@ -55,6 +55,10 @@ func (p *Parser) declaration() Stmt {
 		}
 	}()
 
+	if p.match(CLASS) {
+		return p.classDeclaration()
+	}
+
 	if p.match(FUN) {
 		return p.function("function")
 	}
@@ -77,6 +81,20 @@ func (p *Parser) varDeclaration() Stmt {
 
 	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
 	return &Var{Name: name, Initializer: initializer}
+}
+
+// classDeclaration parses a class declaration
+func (p *Parser) classDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "Expect class name.")
+	p.consume(LEFT_BRACE, "Expect '{' before class body.")
+
+	methods := []*Function{}
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		methods = append(methods, p.function("method").(*Function))
+	}
+
+	p.consume(RIGHT_BRACE, "Expect '}' after class body.")
+	return &Class{Name: name, Methods: methods}
 }
 
 // function parses a function declaration

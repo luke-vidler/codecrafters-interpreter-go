@@ -106,6 +106,13 @@ func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
 	return nil
 }
 
+// VisitClassStmt executes a class declaration
+func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
+	class := NewLoxClass(stmt.Name.Lexeme)
+	i.environment.Define(stmt.Name.Lexeme, class)
+	return nil
+}
+
 // VisitReturnStmt executes a return statement
 func (i *Interpreter) VisitReturnStmt(stmt *Return) interface{} {
 	var value interface{}
