@@ -64,6 +64,7 @@ type Token struct {
 	Type    TokenType
 	Lexeme  string
 	Literal string
+	Line    int
 }
 
 var keywords = map[string]TokenType{
@@ -116,6 +117,7 @@ func (s *Scanner) ScanTokens() []Token {
 		Type:    EOF,
 		Lexeme:  "",
 		Literal: "null",
+		Line:    s.line,
 	})
 
 	return s.tokens
@@ -207,6 +209,7 @@ func (s *Scanner) addToken(tokenType TokenType, literal string) {
 		Type:    tokenType,
 		Lexeme:  text,
 		Literal: literal,
+		Line:    s.line,
 	})
 }
 

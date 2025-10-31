@@ -99,6 +99,10 @@ func main() {
 		resolver := NewResolver(interpreter)
 		resolver.Resolve(statements)
 
+		if resolver.HasError() {
+			os.Exit(65)
+		}
+
 		interpreter.InterpretStatements(statements)
 
 		if interpreter.HasRuntimeError() {

@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // FunctionType tracks what kind of function we're currently in
 type FunctionType int
@@ -15,6 +18,7 @@ type Resolver struct {
 	interpreter     *Interpreter
 	scopes          []map[string]bool
 	currentFunction FunctionType
+	hadError        bool
 }
 
 func NewResolver(interpreter *Interpreter) *Resolver {
@@ -22,7 +26,13 @@ func NewResolver(interpreter *Interpreter) *Resolver {
 		interpreter:     interpreter,
 		scopes:          []map[string]bool{},
 		currentFunction: NONE_FUNCTION,
+		hadError:        false,
 	}
+}
+
+// HasError returns whether the resolver encountered any errors
+func (r *Resolver) HasError() bool {
+	return r.hadError
 }
 
 // Resolve resolves a list of statements
@@ -174,7 +184,9 @@ func (r *Resolver) VisitVariableExpr(expr *Variable) interface{} {
 	if len(r.scopes) > 0 {
 		scope := r.scopes[len(r.scopes)-1]
 		if ready, ok := scope[expr.Name.Lexeme]; ok && !ready {
-			fmt.Printf("Error: Can't read local variable in its own initializer.\n")
+			r.hadError = true
+			fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': Can't read local variable in its own initializer.\n",
+				expr.Name.Line, expr.Name.Lexeme)
 		}
 	}
 
