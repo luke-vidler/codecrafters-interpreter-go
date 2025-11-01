@@ -99,14 +99,16 @@ func (f *LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
 
 // LoxClass represents a user-defined class
 type LoxClass struct {
-	name    string
-	methods map[string]*LoxFunction
+	name       string
+	superclass *LoxClass
+	methods    map[string]*LoxFunction
 }
 
-func NewLoxClass(name string, methods map[string]*LoxFunction) *LoxClass {
+func NewLoxClass(name string, superclass *LoxClass, methods map[string]*LoxFunction) *LoxClass {
 	return &LoxClass{
-		name:    name,
-		methods: methods,
+		name:       name,
+		superclass: superclass,
+		methods:    methods,
 	}
 }
 
@@ -115,6 +117,12 @@ func (c *LoxClass) FindMethod(name string) *LoxFunction {
 	if method, ok := c.methods[name]; ok {
 		return method
 	}
+
+	// Check superclass if method not found
+	if c.superclass != nil {
+		return c.superclass.FindMethod(name)
+	}
+
 	return nil
 }
 

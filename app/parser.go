@@ -86,6 +86,14 @@ func (p *Parser) varDeclaration() Stmt {
 // classDeclaration parses a class declaration
 func (p *Parser) classDeclaration() Stmt {
 	name := p.consume(IDENTIFIER, "Expect class name.")
+
+	// Check for superclass
+	var superclass *Variable
+	if p.match(LESS) {
+		p.consume(IDENTIFIER, "Expect superclass name.")
+		superclass = &Variable{Name: p.previous()}
+	}
+
 	p.consume(LEFT_BRACE, "Expect '{' before class body.")
 
 	methods := []*Function{}
@@ -94,7 +102,7 @@ func (p *Parser) classDeclaration() Stmt {
 	}
 
 	p.consume(RIGHT_BRACE, "Expect '}' after class body.")
-	return &Class{Name: name, Methods: methods}
+	return &Class{Name: name, Superclass: superclass, Methods: methods}
 }
 
 // function parses a function declaration

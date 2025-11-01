@@ -99,8 +99,9 @@ func (r *Return) Accept(visitor StmtVisitor) interface{} {
 
 // Class represents a class declaration statement
 type Class struct {
-	Name    Token
-	Methods []*Function
+	Name       Token
+	Superclass *Variable
+	Methods    []*Function
 }
 
 func (c *Class) Accept(visitor StmtVisitor) interface{} {

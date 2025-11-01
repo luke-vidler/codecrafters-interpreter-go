@@ -108,6 +108,21 @@ func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
 
 // VisitClassStmt executes a class declaration
 func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
+	// Evaluate superclass if present
+	var superclass *LoxClass
+	if stmt.Superclass != nil {
+		superclassValue := i.Evaluate(stmt.Superclass)
+		if i.hadRuntimeError {
+			return nil
+		}
+		var ok bool
+		superclass, ok = superclassValue.(*LoxClass)
+		if !ok {
+			i.runtimeError(stmt.Superclass.Name, "Superclass must be a class.")
+			return nil
+		}
+	}
+
 	// Create methods map
 	methods := make(map[string]*LoxFunction)
 	for _, method := range stmt.Methods {
@@ -119,7 +134,7 @@ func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
 		methods[method.Name.Lexeme] = function
 	}
 
-	class := NewLoxClass(stmt.Name.Lexeme, methods)
+	class := NewLoxClass(stmt.Name.Lexeme, superclass, methods)
 	i.environment.Define(stmt.Name.Lexeme, class)
 	return nil
 }

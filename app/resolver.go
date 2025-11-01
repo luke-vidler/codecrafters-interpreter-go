@@ -169,6 +169,11 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
+	// Resolve superclass if present
+	if stmt.Superclass != nil {
+		r.resolveExpr(stmt.Superclass)
+	}
+
 	// Resolve methods
 	for _, method := range stmt.Methods {
 		r.beginScope()
