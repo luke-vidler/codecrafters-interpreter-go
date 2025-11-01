@@ -108,15 +108,32 @@ func (c *LoxClass) Call(interpreter *Interpreter, arguments []interface{}) inter
 
 // LoxInstance represents an instance of a class
 type LoxInstance struct {
-	class *LoxClass
+	class  *LoxClass
+	fields map[string]interface{}
 }
 
 func NewLoxInstance(class *LoxClass) *LoxInstance {
 	return &LoxInstance{
-		class: class,
+		class:  class,
+		fields: make(map[string]interface{}),
 	}
 }
 
 func (i *LoxInstance) String() string {
 	return fmt.Sprintf("%s instance", i.class.name)
+}
+
+// Get retrieves a property from the instance
+func (i *LoxInstance) Get(name Token) interface{} {
+	if value, ok := i.fields[name.Lexeme]; ok {
+		return value
+	}
+
+	// Property doesn't exist - this will be handled by the interpreter
+	return nil
+}
+
+// Set sets a property on the instance
+func (i *LoxInstance) Set(name Token, value interface{}) {
+	i.fields[name.Lexeme] = value
 }

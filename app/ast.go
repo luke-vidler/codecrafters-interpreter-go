@@ -15,6 +15,8 @@ type ExprVisitor interface {
 	VisitAssignmentExpr(expr *Assignment) interface{}
 	VisitLogicalExpr(expr *Logical) interface{}
 	VisitCallExpr(expr *Call) interface{}
+	VisitGetExpr(expr *Get) interface{}
+	VisitSetExpr(expr *Set) interface{}
 }
 
 // Literal represents a literal value expression
@@ -95,4 +97,25 @@ type Call struct {
 
 func (c *Call) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitCallExpr(c)
+}
+
+// Get represents a property access expression
+type Get struct {
+	Object Expr
+	Name   Token
+}
+
+func (g *Get) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitGetExpr(g)
+}
+
+// Set represents a property assignment expression
+type Set struct {
+	Object Expr
+	Name   Token
+	Value  Expr
+}
+
+func (s *Set) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitSetExpr(s)
 }

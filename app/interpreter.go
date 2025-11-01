@@ -269,6 +269,48 @@ func (i *Interpreter) VisitCallExpr(expr *Call) interface{} {
 	return function.Call(i, arguments)
 }
 
+// VisitGetExpr evaluates a property access expression
+func (i *Interpreter) VisitGetExpr(expr *Get) interface{} {
+	object := i.Evaluate(expr.Object)
+	if i.hadRuntimeError {
+		return nil
+	}
+
+	// Check if the object is an instance
+	if instance, ok := object.(*LoxInstance); ok {
+		value := instance.Get(expr.Name)
+		if value == nil {
+			i.runtimeError(expr.Name, fmt.Sprintf("Undefined property '%s'.", expr.Name.Lexeme))
+			return nil
+		}
+		return value
+	}
+
+	i.runtimeError(expr.Name, "Only instances have properties.")
+	return nil
+}
+
+// VisitSetExpr evaluates a property assignment expression
+func (i *Interpreter) VisitSetExpr(expr *Set) interface{} {
+	object := i.Evaluate(expr.Object)
+	if i.hadRuntimeError {
+		return nil
+	}
+
+	// Check if the object is an instance
+	if instance, ok := object.(*LoxInstance); ok {
+		value := i.Evaluate(expr.Value)
+		if i.hadRuntimeError {
+			return nil
+		}
+		instance.Set(expr.Name, value)
+		return value
+	}
+
+	i.runtimeError(expr.Name, "Only instances have fields.")
+	return nil
+}
+
 // VisitLiteralExpr evaluates a literal expression
 func (i *Interpreter) VisitLiteralExpr(expr *Literal) interface{} {
 	return expr.Value

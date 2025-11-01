@@ -241,6 +241,19 @@ func (r *Resolver) VisitCallExpr(expr *Call) interface{} {
 	return nil
 }
 
+// VisitGetExpr resolves a property access expression
+func (r *Resolver) VisitGetExpr(expr *Get) interface{} {
+	r.resolveExpr(expr.Object)
+	return nil
+}
+
+// VisitSetExpr resolves a property assignment expression
+func (r *Resolver) VisitSetExpr(expr *Set) interface{} {
+	r.resolveExpr(expr.Value)
+	r.resolveExpr(expr.Object)
+	return nil
+}
+
 // VisitGroupingExpr resolves a grouping expression
 func (r *Resolver) VisitGroupingExpr(expr *Grouping) interface{} {
 	r.resolveExpr(expr.Expression)

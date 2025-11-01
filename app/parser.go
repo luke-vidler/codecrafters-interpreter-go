@@ -306,7 +306,12 @@ func (p *Parser) assignment() Expr {
 			return &Assignment{Name: variable.Name, Value: value}
 		}
 
-		// If it's not a variable, report an error
+		// Check if the left side is a property access (get expression)
+		if get, ok := expr.(*Get); ok {
+			return &Set{Object: get.Object, Name: get.Name, Value: value}
+		}
+
+		// If it's not a variable or property, report an error
 		p.error(equals, "Invalid assignment target.")
 	}
 
@@ -415,6 +420,9 @@ func (p *Parser) call() Expr {
 	for {
 		if p.match(LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(DOT) {
+			name := p.consume(IDENTIFIER, "Expect property name after '.'.")
+			expr = &Get{Object: expr, Name: name}
 		} else {
 			break
 		}

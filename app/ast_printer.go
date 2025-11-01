@@ -79,3 +79,16 @@ func (p *AstPrinter) VisitCallExpr(expr *Call) interface{} {
 	}
 	return fmt.Sprintf("(call %s %s)", calleeExpr, args)
 }
+
+// VisitGetExpr formats a property access expression
+func (p *AstPrinter) VisitGetExpr(expr *Get) interface{} {
+	objectExpr := expr.Object.Accept(p).(string)
+	return fmt.Sprintf("(get %s %s)", objectExpr, expr.Name.Lexeme)
+}
+
+// VisitSetExpr formats a property assignment expression
+func (p *AstPrinter) VisitSetExpr(expr *Set) interface{} {
+	objectExpr := expr.Object.Accept(p).(string)
+	valueExpr := expr.Value.Accept(p).(string)
+	return fmt.Sprintf("(set %s %s %s)", objectExpr, expr.Name.Lexeme, valueExpr)
+}
