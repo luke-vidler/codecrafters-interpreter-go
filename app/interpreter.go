@@ -112,6 +112,10 @@ func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
 	methods := make(map[string]*LoxFunction)
 	for _, method := range stmt.Methods {
 		function := NewLoxFunction(method, i.environment)
+		// Mark init as an initializer
+		if method.Name.Lexeme == "init" {
+			function.isInitializer = true
+		}
 		methods[method.Name.Lexeme] = function
 	}
 

@@ -30,14 +30,16 @@ func (c *ClockNative) Call(interpreter *Interpreter, arguments []interface{}) in
 
 // LoxFunction represents a user-defined function
 type LoxFunction struct {
-	declaration *Function
-	closure     *Environment
+	declaration   *Function
+	closure       *Environment
+	isInitializer bool
 }
 
 func NewLoxFunction(declaration *Function, closure *Environment) *LoxFunction {
 	return &LoxFunction{
-		declaration: declaration,
-		closure:     closure,
+		declaration:   declaration,
+		closure:       closure,
+		isInitializer: false,
 	}
 }
 
@@ -73,6 +75,11 @@ func (f *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) in
 		interpreter.executeBlock(f.declaration.Body, environment)
 	}()
 
+	// If this is an initializer, always return "this" instead of the return value
+	if f.isInitializer {
+		return f.closure.GetAt(0, "this")
+	}
+
 	return returnValue
 }
 
@@ -85,7 +92,9 @@ func (f *LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
 	// Create a new environment with "this" bound to the instance
 	environment := NewEnclosedEnvironment(f.closure)
 	environment.Define("this", instance)
-	return NewLoxFunction(f.declaration, environment)
+	bound := NewLoxFunction(f.declaration, environment)
+	bound.isInitializer = f.isInitializer
+	return bound
 }
 
 // LoxClass represents a user-defined class
@@ -115,12 +124,23 @@ func (c *LoxClass) String() string {
 
 // Arity returns the number of arguments the class constructor takes
 func (c *LoxClass) Arity() int {
+	initializer := c.FindMethod("init")
+	if initializer != nil {
+		return initializer.Arity()
+	}
 	return 0
 }
 
 // Call creates a new instance of the class
 func (c *LoxClass) Call(interpreter *Interpreter, arguments []interface{}) interface{} {
 	instance := NewLoxInstance(c)
+
+	// Call the init method if it exists
+	initializer := c.FindMethod("init")
+	if initializer != nil {
+		initializer.Bind(instance).Call(interpreter, arguments)
+	}
+
 	return instance
 }
 
