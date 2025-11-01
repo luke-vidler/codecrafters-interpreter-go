@@ -584,7 +584,7 @@ func (i *Interpreter) HasRuntimeError() bool {
 // runtimeError reports a runtime error
 func (i *Interpreter) runtimeError(token Token, message string) {
 	i.hadRuntimeError = true
-	fmt.Fprintf(os.Stderr, "%s\n[line 1]\n", message)
+	fmt.Fprintf(os.Stderr, "%s\n[line %d]\n", message, token.Line)
 }
 
 // Stringify converts a value to its string representation for output

@@ -171,6 +171,12 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 
 	// Resolve superclass if present
 	if stmt.Superclass != nil {
+		// Check if class is trying to inherit from itself
+		if stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme {
+			r.hadError = true
+			fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': A class can't inherit from itself.\n",
+				stmt.Superclass.Name.Line, stmt.Superclass.Name.Lexeme)
+		}
 		r.resolveExpr(stmt.Superclass)
 	}
 
