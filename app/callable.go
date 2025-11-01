@@ -82,9 +82,10 @@ func (f *LoxFunction) String() string {
 
 // Bind creates a bound method with a specific instance as "this"
 func (f *LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
-	// For now, we'll just return the function as-is
-	// In a later stage with "this", we'll bind the instance to a "this" variable
-	return f
+	// Create a new environment with "this" bound to the instance
+	environment := NewEnclosedEnvironment(f.closure)
+	environment.Define("this", instance)
+	return NewLoxFunction(f.declaration, environment)
 }
 
 // LoxClass represents a user-defined class

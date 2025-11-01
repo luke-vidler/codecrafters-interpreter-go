@@ -198,6 +198,11 @@ func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
 	return i.lookUpVariable(expr.Name, expr)
 }
 
+// VisitThisExpr evaluates the this keyword
+func (i *Interpreter) VisitThisExpr(expr *This) interface{} {
+	return i.lookUpVariable(expr.Keyword, expr)
+}
+
 // VisitAssignmentExpr evaluates an assignment expression
 func (i *Interpreter) VisitAssignmentExpr(expr *Assignment) interface{} {
 	value := i.Evaluate(expr.Value)

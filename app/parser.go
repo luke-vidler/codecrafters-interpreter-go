@@ -477,6 +477,11 @@ func (p *Parser) primary() Expr {
 		return &Literal{Value: p.previous().Literal}
 	}
 
+	// Handle THIS keyword
+	if p.match(THIS) {
+		return &This{Keyword: p.previous()}
+	}
+
 	// Handle IDENTIFIER - variable reference
 	if p.match(IDENTIFIER) {
 		return &Variable{Name: p.previous()}

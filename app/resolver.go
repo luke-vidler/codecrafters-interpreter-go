@@ -13,11 +13,20 @@ const (
 	FUNCTION
 )
 
+// ClassType tracks whether we're currently inside a class
+type ClassType int
+
+const (
+	NONE_CLASS ClassType = iota
+	IN_CLASS
+)
+
 // Resolver performs static analysis to resolve variable bindings
 type Resolver struct {
 	interpreter     *Interpreter
 	scopes          []map[string]bool
 	currentFunction FunctionType
+	currentClass    ClassType
 	hadError        bool
 }
 
@@ -26,6 +35,7 @@ func NewResolver(interpreter *Interpreter) *Resolver {
 		interpreter:     interpreter,
 		scopes:          []map[string]bool{},
 		currentFunction: NONE_FUNCTION,
+		currentClass:    NONE_CLASS,
 		hadError:        false,
 	}
 }
@@ -151,14 +161,21 @@ func (r *Resolver) VisitFunctionStmt(stmt *Function) interface{} {
 
 // VisitClassStmt resolves a class declaration
 func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
+	enclosingClass := r.currentClass
+	r.currentClass = IN_CLASS
+
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
 	// Resolve methods
 	for _, method := range stmt.Methods {
+		r.beginScope()
+		r.scopes[len(r.scopes)-1]["this"] = true
 		r.resolveFunction(method, FUNCTION)
+		r.endScope()
 	}
 
+	r.currentClass = enclosingClass
 	return nil
 }
 
@@ -219,6 +236,19 @@ func (r *Resolver) VisitVariableExpr(expr *Variable) interface{} {
 	}
 
 	r.resolveLocal(expr, expr.Name)
+	return nil
+}
+
+// VisitThisExpr resolves the this keyword
+func (r *Resolver) VisitThisExpr(expr *This) interface{} {
+	if r.currentClass == NONE_CLASS {
+		r.hadError = true
+		fmt.Fprintf(os.Stderr, "[line %d] Error at 'this': Can't use 'this' outside of a class.\n",
+			expr.Keyword.Line)
+		return nil
+	}
+
+	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }
 

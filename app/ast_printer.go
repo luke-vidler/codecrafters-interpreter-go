@@ -92,3 +92,8 @@ func (p *AstPrinter) VisitSetExpr(expr *Set) interface{} {
 	valueExpr := expr.Value.Accept(p).(string)
 	return fmt.Sprintf("(set %s %s %s)", objectExpr, expr.Name.Lexeme, valueExpr)
 }
+
+// VisitThisExpr formats a this keyword expression
+func (p *AstPrinter) VisitThisExpr(expr *This) interface{} {
+	return "this"
+}

@@ -17,6 +17,7 @@ type ExprVisitor interface {
 	VisitCallExpr(expr *Call) interface{}
 	VisitGetExpr(expr *Get) interface{}
 	VisitSetExpr(expr *Set) interface{}
+	VisitThisExpr(expr *This) interface{}
 }
 
 // Literal represents a literal value expression
@@ -118,4 +119,13 @@ type Set struct {
 
 func (s *Set) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitSetExpr(s)
+}
+
+// This represents the this keyword expression
+type This struct {
+	Keyword Token
+}
+
+func (t *This) Accept(visitor ExprVisitor) interface{} {
+	return visitor.VisitThisExpr(t)
 }
