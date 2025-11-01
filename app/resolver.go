@@ -11,6 +11,8 @@ type FunctionType int
 const (
 	NONE_FUNCTION FunctionType = iota
 	FUNCTION
+	INITIALIZER
+	METHOD
 )
 
 // ClassType tracks whether we're currently inside a class
@@ -171,7 +173,14 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 	for _, method := range stmt.Methods {
 		r.beginScope()
 		r.scopes[len(r.scopes)-1]["this"] = true
-		r.resolveFunction(method, FUNCTION)
+
+		// Determine the function type based on method name
+		declaration := METHOD
+		if method.Name.Lexeme == "init" {
+			declaration = INITIALIZER
+		}
+
+		r.resolveFunction(method, declaration)
 		r.endScope()
 	}
 
@@ -210,6 +219,12 @@ func (r *Resolver) VisitReturnStmt(stmt *Return) interface{} {
 	}
 
 	if stmt.Value != nil {
+		// Check if we're in an initializer and trying to return a value
+		if r.currentFunction == INITIALIZER {
+			r.hadError = true
+			fmt.Fprintf(os.Stderr, "[line %d] Error at 'return': Can't return a value from an initializer.\n",
+				stmt.Keyword.Line)
+		}
 		r.resolveExpr(stmt.Value)
 	}
 	return nil
