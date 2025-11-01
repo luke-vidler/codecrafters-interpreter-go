@@ -490,6 +490,14 @@ func (p *Parser) primary() Expr {
 		return &This{Keyword: p.previous()}
 	}
 
+	// Handle SUPER keyword
+	if p.match(SUPER) {
+		keyword := p.previous()
+		p.consume(DOT, "Expect '.' after 'super'.")
+		method := p.consume(IDENTIFIER, "Expect superclass method name.")
+		return &Super{Keyword: keyword, Method: method}
+	}
+
 	// Handle IDENTIFIER - variable reference
 	if p.match(IDENTIFIER) {
 		return &Variable{Name: p.previous()}

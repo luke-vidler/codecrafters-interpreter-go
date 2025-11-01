@@ -123,6 +123,15 @@ func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
 		}
 	}
 
+	// Define class name in current environment (before methods)
+	i.environment.Define(stmt.Name.Lexeme, nil)
+
+	// If there's a superclass, create a new environment with "super" bound
+	if superclass != nil {
+		i.environment = NewEnclosedEnvironment(i.environment)
+		i.environment.Define("super", superclass)
+	}
+
 	// Create methods map
 	methods := make(map[string]*LoxFunction)
 	for _, method := range stmt.Methods {
@@ -135,7 +144,13 @@ func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
 	}
 
 	class := NewLoxClass(stmt.Name.Lexeme, superclass, methods)
-	i.environment.Define(stmt.Name.Lexeme, class)
+
+	// Pop super environment if we created one
+	if superclass != nil {
+		i.environment = i.environment.enclosing
+	}
+
+	i.environment.Assign(stmt.Name, class)
 	return nil
 }
 
@@ -220,6 +235,23 @@ func (i *Interpreter) VisitVariableExpr(expr *Variable) interface{} {
 // VisitThisExpr evaluates the this keyword
 func (i *Interpreter) VisitThisExpr(expr *This) interface{} {
 	return i.lookUpVariable(expr.Keyword, expr)
+}
+
+// VisitSuperExpr evaluates the super keyword
+func (i *Interpreter) VisitSuperExpr(expr *Super) interface{} {
+	distance := i.locals[expr]
+	superclass := i.environment.GetAt(distance, "super").(*LoxClass)
+
+	// Get "this" which is one level closer than "super"
+	object := i.environment.GetAt(distance-1, "this").(*LoxInstance)
+
+	method := superclass.FindMethod(expr.Method.Lexeme)
+	if method == nil {
+		i.runtimeError(expr.Method, fmt.Sprintf("Undefined property '%s'.", expr.Method.Lexeme))
+		return nil
+	}
+
+	return method.Bind(object)
 }
 
 // VisitAssignmentExpr evaluates an assignment expression

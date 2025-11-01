@@ -97,3 +97,8 @@ func (p *AstPrinter) VisitSetExpr(expr *Set) interface{} {
 func (p *AstPrinter) VisitThisExpr(expr *This) interface{} {
 	return "this"
 }
+
+// VisitSuperExpr formats a super keyword expression
+func (p *AstPrinter) VisitSuperExpr(expr *Super) interface{} {
+	return fmt.Sprintf("(super %s)", expr.Method.Lexeme)
+}

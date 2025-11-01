@@ -21,6 +21,7 @@ type ClassType int
 const (
 	NONE_CLASS ClassType = iota
 	IN_CLASS
+	IN_SUBCLASS
 )
 
 // Resolver performs static analysis to resolve variable bindings
@@ -171,6 +172,7 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 
 	// Resolve superclass if present
 	if stmt.Superclass != nil {
+		r.currentClass = IN_SUBCLASS
 		// Check if class is trying to inherit from itself
 		if stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme {
 			r.hadError = true
@@ -178,6 +180,10 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 				stmt.Superclass.Name.Line, stmt.Superclass.Name.Lexeme)
 		}
 		r.resolveExpr(stmt.Superclass)
+
+		// Create a scope for "super"
+		r.beginScope()
+		r.scopes[len(r.scopes)-1]["super"] = true
 	}
 
 	// Resolve methods
@@ -192,6 +198,11 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 		}
 
 		r.resolveFunction(method, declaration)
+		r.endScope()
+	}
+
+	// End super scope if we created one
+	if stmt.Superclass != nil {
 		r.endScope()
 	}
 
@@ -270,6 +281,24 @@ func (r *Resolver) VisitThisExpr(expr *This) interface{} {
 	if r.currentClass == NONE_CLASS {
 		r.hadError = true
 		fmt.Fprintf(os.Stderr, "[line %d] Error at 'this': Can't use 'this' outside of a class.\n",
+			expr.Keyword.Line)
+		return nil
+	}
+
+	r.resolveLocal(expr, expr.Keyword)
+	return nil
+}
+
+// VisitSuperExpr resolves the super keyword
+func (r *Resolver) VisitSuperExpr(expr *Super) interface{} {
+	if r.currentClass == NONE_CLASS {
+		r.hadError = true
+		fmt.Fprintf(os.Stderr, "[line %d] Error at 'super': Can't use 'super' outside of a class.\n",
+			expr.Keyword.Line)
+		return nil
+	} else if r.currentClass != IN_SUBCLASS {
+		r.hadError = true
+		fmt.Fprintf(os.Stderr, "[line %d] Error at 'super': Can't use 'super' in a class with no superclass.\n",
 			expr.Keyword.Line)
 		return nil
 	}
