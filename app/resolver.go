@@ -153,6 +153,12 @@ func (r *Resolver) VisitFunctionStmt(stmt *Function) interface{} {
 func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
+
+	// Resolve methods
+	for _, method := range stmt.Methods {
+		r.resolveFunction(method, FUNCTION)
+	}
+
 	return nil
 }
 

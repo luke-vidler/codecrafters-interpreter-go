@@ -80,15 +80,32 @@ func (f *LoxFunction) String() string {
 	return fmt.Sprintf("<fn %s>", f.declaration.Name.Lexeme)
 }
 
-// LoxClass represents a user-defined class
-type LoxClass struct {
-	name string
+// Bind creates a bound method with a specific instance as "this"
+func (f *LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
+	// For now, we'll just return the function as-is
+	// In a later stage with "this", we'll bind the instance to a "this" variable
+	return f
 }
 
-func NewLoxClass(name string) *LoxClass {
+// LoxClass represents a user-defined class
+type LoxClass struct {
+	name    string
+	methods map[string]*LoxFunction
+}
+
+func NewLoxClass(name string, methods map[string]*LoxFunction) *LoxClass {
 	return &LoxClass{
-		name: name,
+		name:    name,
+		methods: methods,
 	}
+}
+
+// FindMethod looks up a method by name
+func (c *LoxClass) FindMethod(name string) *LoxFunction {
+	if method, ok := c.methods[name]; ok {
+		return method
+	}
+	return nil
 }
 
 func (c *LoxClass) String() string {
@@ -123,10 +140,17 @@ func (i *LoxInstance) String() string {
 	return fmt.Sprintf("%s instance", i.class.name)
 }
 
-// Get retrieves a property from the instance
+// Get retrieves a property or method from the instance
 func (i *LoxInstance) Get(name Token) interface{} {
+	// First check for fields
 	if value, ok := i.fields[name.Lexeme]; ok {
 		return value
+	}
+
+	// Then check for methods
+	method := i.class.FindMethod(name.Lexeme)
+	if method != nil {
+		return method.Bind(i)
 	}
 
 	// Property doesn't exist - this will be handled by the interpreter

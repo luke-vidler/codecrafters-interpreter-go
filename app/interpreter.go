@@ -108,7 +108,14 @@ func (i *Interpreter) VisitFunctionStmt(stmt *Function) interface{} {
 
 // VisitClassStmt executes a class declaration
 func (i *Interpreter) VisitClassStmt(stmt *Class) interface{} {
-	class := NewLoxClass(stmt.Name.Lexeme)
+	// Create methods map
+	methods := make(map[string]*LoxFunction)
+	for _, method := range stmt.Methods {
+		function := NewLoxFunction(method, i.environment)
+		methods[method.Name.Lexeme] = function
+	}
+
+	class := NewLoxClass(stmt.Name.Lexeme, methods)
 	i.environment.Define(stmt.Name.Lexeme, class)
 	return nil
 }
