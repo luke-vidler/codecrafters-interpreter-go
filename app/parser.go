@@ -575,10 +575,7 @@ func (p *Parser) error(token Token, message string) {
 
 // reportError prints the error message to stderr
 func (p *Parser) reportError(token Token, where string, message string) {
-	// Note: We need to get the line number from the token
-	// For now, we'll use line 1 as a placeholder since Token doesn't have a line field yet
-	// We'll need to add this field to Token in scanner.go
-	fmt.Fprintf(os.Stderr, "[line 1] Error %s: %s\n", where, message)
+	fmt.Fprintf(os.Stderr, "[line %d] Error %s: %s\n", token.Line, where, message)
 }
 
 // synchronize advances the parser to the next statement boundary
