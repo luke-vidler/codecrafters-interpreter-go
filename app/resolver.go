@@ -48,6 +48,12 @@ func (r *Resolver) HasError() bool {
 	return r.hadError
 }
 
+// error reports a resolver error
+func (r *Resolver) error(token Token, message string) {
+	r.hadError = true
+	fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': %s\n", token.Line, token.Lexeme, message)
+}
+
 // Resolve resolves a list of statements
 func (r *Resolver) Resolve(statements []Stmt) {
 	for _, stmt := range statements {
@@ -85,9 +91,7 @@ func (r *Resolver) declare(name Token) {
 
 	// Check if variable already exists in current scope
 	if _, exists := scope[name.Lexeme]; exists {
-		r.hadError = true
-		fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': Already a variable with this name in this scope.\n",
-			name.Line, name.Lexeme)
+		r.error(name, "Already a variable with this name in this scope.")
 		return
 	}
 
@@ -175,9 +179,7 @@ func (r *Resolver) VisitClassStmt(stmt *Class) interface{} {
 		r.currentClass = IN_SUBCLASS
 		// Check if class is trying to inherit from itself
 		if stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme {
-			r.hadError = true
-			fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': A class can't inherit from itself.\n",
-				stmt.Superclass.Name.Line, stmt.Superclass.Name.Lexeme)
+			r.error(stmt.Superclass.Name, "A class can't inherit from itself.")
 		}
 		r.resolveExpr(stmt.Superclass)
 
@@ -235,17 +237,13 @@ func (r *Resolver) VisitPrintStmt(stmt *Print) interface{} {
 // VisitReturnStmt resolves a return statement
 func (r *Resolver) VisitReturnStmt(stmt *Return) interface{} {
 	if r.currentFunction == NONE_FUNCTION {
-		r.hadError = true
-		fmt.Fprintf(os.Stderr, "[line %d] Error at 'return': Can't return from top-level code.\n",
-			stmt.Keyword.Line)
+		r.error(stmt.Keyword, "Can't return from top-level code.")
 	}
 
 	if stmt.Value != nil {
 		// Check if we're in an initializer and trying to return a value
 		if r.currentFunction == INITIALIZER {
-			r.hadError = true
-			fmt.Fprintf(os.Stderr, "[line %d] Error at 'return': Can't return a value from an initializer.\n",
-				stmt.Keyword.Line)
+			r.error(stmt.Keyword, "Can't return a value from an initializer.")
 		}
 		r.resolveExpr(stmt.Value)
 	}
@@ -266,9 +264,7 @@ func (r *Resolver) VisitVariableExpr(expr *Variable) interface{} {
 	if len(r.scopes) > 0 {
 		scope := r.scopes[len(r.scopes)-1]
 		if ready, ok := scope[expr.Name.Lexeme]; ok && !ready {
-			r.hadError = true
-			fmt.Fprintf(os.Stderr, "[line %d] Error at '%s': Can't read local variable in its own initializer.\n",
-				expr.Name.Line, expr.Name.Lexeme)
+			r.error(expr.Name, "Can't read local variable in its own initializer.")
 		}
 	}
 
@@ -279,9 +275,7 @@ func (r *Resolver) VisitVariableExpr(expr *Variable) interface{} {
 // VisitThisExpr resolves the this keyword
 func (r *Resolver) VisitThisExpr(expr *This) interface{} {
 	if r.currentClass == NONE_CLASS {
-		r.hadError = true
-		fmt.Fprintf(os.Stderr, "[line %d] Error at 'this': Can't use 'this' outside of a class.\n",
-			expr.Keyword.Line)
+		r.error(expr.Keyword, "Can't use 'this' outside of a class.")
 		return nil
 	}
 
@@ -292,14 +286,10 @@ func (r *Resolver) VisitThisExpr(expr *This) interface{} {
 // VisitSuperExpr resolves the super keyword
 func (r *Resolver) VisitSuperExpr(expr *Super) interface{} {
 	if r.currentClass == NONE_CLASS {
-		r.hadError = true
-		fmt.Fprintf(os.Stderr, "[line %d] Error at 'super': Can't use 'super' outside of a class.\n",
-			expr.Keyword.Line)
+		r.error(expr.Keyword, "Can't use 'super' outside of a class.")
 		return nil
 	} else if r.currentClass != IN_SUBCLASS {
-		r.hadError = true
-		fmt.Fprintf(os.Stderr, "[line %d] Error at 'super': Can't use 'super' in a class with no superclass.\n",
-			expr.Keyword.Line)
+		r.error(expr.Keyword, "Can't use 'super' in a class with no superclass.")
 		return nil
 	}
 
